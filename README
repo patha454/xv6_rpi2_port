@@ -1,3 +1,16 @@
+This repository is a project to impliment multiprocessing in an ARM port of xv6.
+
+xv6 is a Unix-like operating system based on Unix version 6.
+Unix version 6 was modernised for a x86 CPU in ANSI C by MIT.
+Zhiyi Huang (University of Otago) ported MIT's xv6 implementation to a ARMv6 based Rasberry Pi systems.
+Mahdi Amri Kordestany adapted Huang's ARMv6 port to ARMv7 based Resberry Pi 2/3 systems.
+
+The xv6 ARM ports have not supported multiprocessing, despite the Resberry Pi having multiple cores on die.
+This reository aims to document and tidy the existing xv6 code, then implement mulicore support to exploir the four ARM cores offered by the Rasberry Pi 2/3.
+
+
+--- README FROM THE PARENT REPO, PRESERVED FOR REFERENCE. --- 
+
 xv6_rpi2_port is based on MIT xv6 (http://pdos.csail.mit.edu/6.828/2012/v6.html).
 It is ported from x86 to armv6 and then to armv7 in Raspberry Pi (RPI2/3). 
 The rpi port follows the coding style of xv6 as much as possible to hide the architectural
