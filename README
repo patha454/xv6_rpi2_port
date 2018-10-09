@@ -6,6 +6,11 @@ though RPI2/3 has four cores.
 
 ACKNOWLEDGEMENTS
 
+Zhiyi Huang (hzy@cs.otago.ac.nz) ported xv6 from x86 to ARMv6 RPI1.
+
+Mahdi Amiri Kordestany (mahdi@cs.otago.ac.nz) ported xv6 from RPI1 to
+RPI2/3.
+
 xv6_rpi2_port is inspired by MIT xv6 and Alex Chadwick's Baking Pi 
 Tutorials (http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/os/).
 Most architecture-independent code is directly from MIT xv6 though sometimes
@@ -19,11 +24,6 @@ though the assembly code was completely rewritten.
 David Welch's RPI code (https://github.com/dwelch67/raspberrypi) is also
 inspiring for trap handling and uart driver.
 
-Mahdi Amiri Kordestany (mahdi@cs.otago.ac.nz) ported xv6 from RPI1 to
-RPI2/3.
-
-If you spot errors or suggest improvements, please send email to
-Zhiyi Huang (hzy@cs.otago.ac.nz).
 
 Building xv6_rpi2_port:
 
