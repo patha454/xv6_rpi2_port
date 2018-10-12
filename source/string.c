@@ -35,7 +35,9 @@ void* memsetw(int *dst, int c, uint n)
 {
     int *p = dst;
     uint rc = n;
-    while (rc-- > 0) *p++ = c;
+    while (rc-- > 0) {
+        *p++ = c;
+    }
     return (void *)p;
 }
 
@@ -55,7 +57,9 @@ void* memsetb(char *dst, int c, uint n)
 {
     char *p=dst;
     uint rc=n;
-    while (rc-- > 0) *p++ = c;
+    while (rc-- > 0) {
+        *p++ = c;
+    }
     return (void *)p;
 }
 
