@@ -33,8 +33,8 @@
  */
 void* memsetw(int *dst, int c, uint n)
 {
-    int *p=dst;
-    uint rc=n;
+    int *p = dst;
+    uint rc = n;
     while (rc-- > 0) *p++ = c;
     return (void *)p;
 }
@@ -278,9 +278,9 @@ int strlen(const char *s)
  */
 uint div(uint n, uint d)
 {
-    uint q=0, r=0;
+    uint q = 0, r = 0;
     int i;
-    for (i=31; i>=0; i--){
+    for (i = 31; i >= 0; i--){
         r = r << 1;
         r = r | ((n >> i) & 1);
         if (r >= d) {
