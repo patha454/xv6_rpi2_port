@@ -4,6 +4,10 @@ ifeq ($(UNAME), x86_64)
 	# set FVP as default on x86_64 systems	
 	hw?=rpi2
 	TOOLCHAIN?=~/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-
+else ifeq ($(UNAME), i686)
+	# MinGW reports 'uname -m' as: i686
+	TOOLCHAIN?=/mingw/gcc-arm-none-eabi-7-2018-q2-update-win32/bin/arm-none-eabi-
+	hw?=rpi2
 else
 	# RPI reports 'uname -m' as: armv7l
 	hw?=rpi2
@@ -63,7 +67,8 @@ K_PDX_BASE=$(shell printf "0x%X\n" $$(( $(PHYSTART) + 0x4000 )) )
 K_PTX_BASE=$(shell printf "0x%X\n" $$(( $(PHYSTART) + 0x3000 )) )
 OFFSET=0x8000
 PHYSOFFSET=$(shell printf "0x%X\n" $$(( $(PHYSTART) + $(OFFSET) )) )
-KERNOFFSET=$(shell printf "0x%X\n" $$(( $(KERNBASE) + $(OFFSET) )) )
+# MinGW console prints %X as signed, causing overflow errors.
+KERNOFFSET= 0x80008000 #$(shell printf "0x%X\n" $$(( $(KERNBASE) + $(OFFSET) )) )
 
 CC_OPTIONS += -DPHYSTART=$(PHYSTART) -DPHYSIZE=$(PHYSIZE) -DKERNBASE=$(KERNBASE) -DMMIO_PA=$(MMIO_PA) -DMMIO_VA=$(MMIO_VA) -DMMIO_SIZE=$(MMIO_SIZE) -DPERIPHBASE=$(PERIPHBASE)
 CC_OPTIONS += -DK_PDX_BASE=$(K_PDX_BASE) -DK_PTX_BASE=$(K_PTX_BASE) -DPHYSOFFSET=$(PHYSOFFSET) -DKERNOFFSET=$(KERNOFFSET)
