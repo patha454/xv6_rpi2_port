@@ -35,7 +35,9 @@ void* memsetw(int *dst, int c, uint n)
 {
     int *p = dst;
     uint rc = n;
-    while (rc-- > 0) *p++ = c;
+    while (rc-- > 0) {
+        *p++ = c;
+    }
     return (void *)p;
 }
 
@@ -55,7 +57,9 @@ void* memsetb(char *dst, int c, uint n)
 {
     char *p=dst;
     uint rc=n;
-    while (rc-- > 0) *p++ = c;
+    while (rc-- > 0) {
+        *p++ = c;
+    }
     return (void *)p;
 }
 
@@ -106,8 +110,9 @@ int memcmp(const void *v1, const void *v2, uint n)
     s1 = v1;
     s2 = v2;
     while (n-- > 0) {
-        if (*s1 != *s2)
-        return *s1 - *s2;
+        if (*s1 != *s2) {
+            return *s1 - *s2;
+        }
         s1++, s2++;
     }
     return 0;
