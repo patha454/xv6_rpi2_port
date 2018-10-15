@@ -38,7 +38,7 @@ void* memsetw(int *dst, int c, uint n)
     while (rc-- > 0) {
         *p++ = c;
     }
-    return (void *)p;
+    return (void *) p;
 }
 
 
@@ -58,9 +58,9 @@ void* memsetb(char *dst, int c, uint n)
     char *p=dst;
     uint rc=n;
     while (rc-- > 0) {
-        *p++ = c;
+        *p++ = (char) c;
     }
-    return (void *)p;
+    return (void *) p;
 }
 
 
@@ -85,9 +85,9 @@ void* memset(void* dst, int c, uint n)
 {
     if ((int)dst % 4 == 0 && n % 4 == 0) {
         c &= 0xFF;
-        return memsetw((int *)dst, (c<<24) | (c<<16) | (c<<8) | c, n / 4);
+        return memsetw((int *) dst, (c<<24) | (c<<16) | (c<<8) | c, n / 4);
     } else {
-        return memsetb((char *)dst, c, n);
+        return memsetb((char *) dst, c, n);
     }
 }
 
