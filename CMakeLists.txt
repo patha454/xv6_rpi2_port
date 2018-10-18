@@ -50,5 +50,6 @@ add_executable(dummy_kernel
         include/spinlock.h
         include/stat.h
         include/syscall.h
+        include/types.h
         include/traps.h
         include/user.h)
