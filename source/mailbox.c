@@ -25,11 +25,11 @@ https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface */
 
 
 void
-create_request(volatile uint *mbuf, uint tag, uint buflen, uint len, uint *data) 
+create_request(volatile u_int32 *mbuf, u_int32 tag, u_int32 buflen, u_int32 len, u_int32 *data)
 {
     int i;
-    volatile uint *tag_info;
-    uint nw, tag_len, total_len;
+    volatile u_int32 *tag_info;
+    u_int32 nw, tag_len, total_len;
 
     tag_info = mbuf + POS_TAG;
 
@@ -54,37 +54,37 @@ create_request(volatile uint *mbuf, uint tag, uint buflen, uint len, uint *data)
 
 }
 
-volatile uint *mailbuffer;
+volatile u_int32 *mailbuffer;
 
 void mailboxinit()
 {
-mailbuffer = (uint *)kalloc();
+mailbuffer = (u_int32 *)kalloc();
 }
 
-uint
-readmailbox(u8 channel)
+u_int32
+readmailbox(u_char8 channel)
 {
-	uint x, y, z;
+	u_int32 x, y, z;
 
 again:
 	while ((inw(MAILBOX_BASE+24) & 0x40000000) != 0);
 	x = inw(MAILBOX_BASE);
-	z = x & 0xf; y = (uint)(channel & 0xf);
+	z = x & 0xf; y = (u_int32)(channel & 0xf);
 	if(z != y) goto again;
 
 	return x&0xfffffff0;
 }
 
 void
-writemailbox(uint *addr, u8 channel)
+writemailbox(u_int32 *addr, u_char8 channel)
 {
-	uint x, y, a;
+	u_int32 x, y, a;
 
-	a = (uint)addr;
+	a = (u_int32)addr;
 	a -= KERNBASE;   /* convert to ARM physical address */
 	a += 0xc0000000; /* convert to VC address space */
 	x = a & 0xfffffff0;
-	y = x | (uint)(channel & 0xf);
+	y = x | (u_int32)(channel & 0xf);
 
 	flush_dcache_all();
 

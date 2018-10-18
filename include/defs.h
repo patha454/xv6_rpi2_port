@@ -18,13 +18,13 @@ void barriers(void);
 void dsb_barrier(void);
 void flush_tlb(void);
 void flush_dcache_all(void);
-void flush_dcache(uint va1, uint va2);
+void flush_dcache(u_int32 va1, u_int32 va2);
 void flush_idcache(void);
-void set_pgtbase(uint base);
+void set_pgtbase(u_int32 base);
 
 // bio.c
 void            binit(void);
-struct buf*     bread(uint, uint);
+struct buf*     bread(u_int32, u_int32);
 void            brelse(struct buf*);
 void            bwrite(struct buf*);
 
@@ -33,16 +33,16 @@ void            consoleinit(void);
 void            cprintf(char*, ...);
 void            consoleintr(int(*)(void));
 void            panic(char*) __attribute__((noreturn));
-void		drawcharacter(u8, uint, uint);
-void		gpuputc(uint);
+void		drawcharacter(u_char8, u_int32, u_int32);
+void		gpuputc(u_int32);
 void		gpuinit(void);
 
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);
-int             dirlink(struct inode*, char*, uint);
-struct inode*   dirlookup(struct inode*, char*, uint*);
-struct inode*   ialloc(uint, short);
+int             dirlink(struct inode*, char*, u_int32);
+struct inode*   dirlookup(struct inode*, char*, u_int32*);
+struct inode*   ialloc(u_int32, short);
 struct inode*   idup(struct inode*);
 void            iinit(void);
 void            ilock(struct inode*);
@@ -53,9 +53,9 @@ void            iupdate(struct inode*);
 int             namecmp(const char*, const char*);
 struct inode*   namei(char*);
 struct inode*   nameiparent(char*, char*);
-int             readi(struct inode*, char*, uint, uint);
+int             readi(struct inode*, char*, u_int32, u_int32);
 void            stati(struct inode*, struct stat*);
-int             writei(struct inode*, char*, uint, uint);
+int             writei(struct inode*, char*, u_int32, u_int32);
 
 
 // ide.c
@@ -78,9 +78,9 @@ int             filewrite(struct file*, char*, int n);
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);
-int             dirlink(struct inode*, char*, uint);
-struct inode*   dirlookup(struct inode*, char*, uint*);
-struct inode*   ialloc(uint, short);
+int             dirlink(struct inode*, char*, u_int32);
+struct inode*   dirlookup(struct inode*, char*, u_int32*);
+struct inode*   ialloc(u_int32, short);
 struct inode*   idup(struct inode*);
 void            iinit(void);
 void            ilock(struct inode*);
@@ -91,9 +91,9 @@ void            iupdate(struct inode*);
 int             namecmp(const char*, const char*);
 struct inode*   namei(char*);
 struct inode*   nameiparent(char*, char*);
-int             readi(struct inode*, char*, uint, uint);
+int             readi(struct inode*, char*, u_int32, u_int32);
 void            stati(struct inode*, struct stat*);
-int             writei(struct inode*, char*, uint, uint);
+int             writei(struct inode*, char*, u_int32, u_int32);
 
 // kalloc.c
 char*           kalloc(void);
@@ -139,8 +139,8 @@ void            swtch(struct context**, struct context*);
 int             argint(int, int*);
 int             argptr(int, char**, int);
 int             argstr(int, char**);
-int             fetchint(uint, int*);
-int             fetchstr(uint, char**);
+int             fetchint(u_int32, int*);
+int             fetchstr(u_int32, char**);
 void            syscall(void);
 
 void kvmalloc(void);
@@ -149,13 +149,13 @@ void kvmalloc(void);
 int UsbInitialise(void);
 void KeyboardUpdate(void);
 char KeyboardGetChar(void);
-uint KeyboardCount(void);
-uint KeyboardGetAddress(uint);
-struct KeyboardLeds KeyboardGetLedSupport(uint);
+u_int32 KeyboardCount(void);
+u_int32 KeyboardGetAddress(u_int32);
+struct KeyboardLeds KeyboardGetLedSupport(u_int32);
 
 // spinlock.c
 void            acquire(struct spinlock*);
-void            getcallerpcs(void*, uint*);
+void            getcallerpcs(void*, u_int32*);
 int             holding(struct spinlock*);
 void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
@@ -163,28 +163,28 @@ void            pushcli(void);
 void            popcli(void);
 
 // string.c
-int             memcmp(const void*, const void*, uint);
-void*           memmove(void*, const void*, uint);
-void*           memset(void*, int, uint);
+int             memcmp(const void*, const void*, u_int32);
+void*           memmove(void*, const void*, u_int32);
+void*           memset(void*, int, u_int32);
 char*           safestrcpy(char*, const char*, int);
 int             strlen(const char*);
-int             strncmp(const char*, const char*, uint);
+int             strncmp(const char*, const char*, u_int32);
 char*           strncpy(char*, const char*, int);
-uint 		div(uint n, uint d);
+u_int32 		div(u_int32 n, u_int32 d);
 
 // syscall.c
 int             argint(int, int*);
 int             argptr(int, char**, int);
 int             argstr(int, char**);
-int             fetchint(uint, int*);
-int             fetchstr(uint, char**);
+int             fetchint(u_int32, int*);
+int             fetchstr(u_int32, char**);
 void            syscall(void);
 
 // timer.c
 void		timer3init(void);
 void		timer3intr(void);
 unsigned long long getsystemtime(void);
-void		delay(uint);
+void		delay(u_int32);
 
 // trap.c
 void            tvinit(void);
@@ -192,16 +192,16 @@ void		sti(void);
 void		cli(void);
 void 		disable_intrs(void);
 void 		enable_intrs(void);
-extern uint     ticks;
+extern u_int32     ticks;
 extern struct spinlock tickslock;
-uint		readcpsr(void);
+u_int32		readcpsr(void);
 
 // uart.c
 void            uartinit(void);
 void            miniuartintr(void);
-void            uartputc(uint);
-void		setgpiofunc(uint, uint);
-void		setgpioval(uint, uint);
+void            uartputc(u_int32);
+void		setgpiofunc(u_int32, u_int32);
+void		setgpioval(u_int32, u_int32);
 
 // vm.c
 void            seginit(void);
@@ -209,21 +209,21 @@ void            kvmalloc(void);
 void            vmenable(void);
 pde_t*          setupkvm(void);
 char*           uva2ka(pde_t*, char*);
-int             allocuvm(pde_t*, uint, uint);
-int             deallocuvm(pde_t*, uint, uint);
+int             allocuvm(pde_t*, u_int32, u_int32);
+int             deallocuvm(pde_t*, u_int32, u_int32);
 void            freevm(pde_t*);
-void            inituvm(pde_t*, char*, uint);
-int             loaduvm(pde_t*, char*, struct inode*, uint, uint);
-pde_t*          copyuvm(pde_t*, uint);
+void            inituvm(pde_t*, char*, u_int32);
+int             loaduvm(pde_t*, char*, struct inode*, u_int32, u_int32);
+pde_t*          copyuvm(pde_t*, u_int32);
 void            switchuvm(struct proc*);
 void            switchkvm(void);
-int             copyout(pde_t*, uint, void*, uint);
+int             copyout(pde_t*, u_int32, void*, u_int32);
 void            clearpteu(pde_t *pgdir, char *uva);
 
 // mailbox.c
-uint readmailbox(u8);
-void writemailbox(uint *, u8);
-void create_request(volatile uint *mbuf, uint tag, uint buflen, uint len, uint *data);
+u_int32 readmailbox(u_char8);
+void writemailbox(u_int32 *, u_char8);
+void create_request(volatile u_int32 *mbuf, u_int32 tag, u_int32 buflen, u_int32 len, u_int32 *data);
 void mailboxinit(void);
 
 

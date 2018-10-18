@@ -60,7 +60,7 @@ binit(void)
 // If not found, allocate fresh block.
 // In either case, return B_BUSY buffer.
 static struct buf*
-bget(uint dev, uint sector)
+bget(u_int32 dev, u_int32 sector)
 {
   struct buf *b;
 
@@ -96,7 +96,7 @@ bget(uint dev, uint sector)
 
 // Return a B_BUSY buf with the contents of the indicated disk sector.
 struct buf*
-bread(uint dev, uint sector)
+bread(u_int32 dev, u_int32 sector)
 {
   struct buf *b;
 

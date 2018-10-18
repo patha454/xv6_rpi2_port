@@ -31,10 +31,10 @@
  * @param n - The number of words to edit in the block.
  * @return - A pointer to the block of words edited.
  */
-void* memsetw(int *dst, int c, uint n)
+void* memsetw(int *dst, int c, u_int32 n)
 {
     int *p = dst;
-    uint rc = n;
+    u_int32 rc = n;
     while (rc-- > 0) {
         *p++ = c;
     }
@@ -53,10 +53,10 @@ void* memsetw(int *dst, int c, uint n)
  * @param n - The number of bytes to edit in the block.
  * @return - A pointer to the block of bytes edited.
  */
-void* memsetb(char *dst, int c, uint n)
+void* memsetb(char *dst, int c, u_int32 n)
 {
     char *p=dst;
-    uint rc=n;
+    u_int32 rc=n;
     while (rc-- > 0) {
         *p++ = (char) c;
     }
@@ -81,7 +81,7 @@ void* memsetb(char *dst, int c, uint n)
  * @param n - The number of bytes to edit in the block.
  * @return - A pointer to the block of memory edited.
  */
-void* memset(void* dst, int c, uint n)
+void* memset(void* dst, int c, u_int32 n)
 {
     if ((int)dst % 4 == 0 && n % 4 == 0) {
         c &= 0xFF;
@@ -104,9 +104,9 @@ void* memset(void* dst, int c, uint n)
  * @param n - The length (in bytes) of 'v1' and 'v2'.
  * @return - < 0 if v1 < v2, > 0 if v2 > v1; zero otherwise.
  */
-int memcmp(const void *v1, const void *v2, uint n)
+int memcmp(const void *v1, const void *v2, u_int32 n)
 {
-    const u8 *s1, *s2;
+    const u_char8 *s1, *s2;
     s1 = v1;
     s2 = v2;
     while (n-- > 0) {
@@ -130,7 +130,7 @@ int memcmp(const void *v1, const void *v2, uint n)
  * @param n - The number of bytes to copy.
  * @return - A pointer to the newly copied memory.
  */
-void* memmove(void *dst, const void *src, uint n) {
+void* memmove(void *dst, const void *src, u_int32 n) {
     const char *s;
     char *d;
     s = src;
@@ -162,7 +162,7 @@ void* memmove(void *dst, const void *src, uint n) {
  * @param n - The number of bytes to copy,
  * @return - A pointer to the newly copied memory.
  */
-void* memcpy(void *dst, const void *src, uint n)
+void* memcpy(void *dst, const void *src, u_int32 n)
 {
     return memmove(dst, src, n);
 }
@@ -182,7 +182,7 @@ void* memcpy(void *dst, const void *src, uint n)
  * @param n - The number of characters to compare in the strings.
  * @return -  < 0 if p < q, > 0 if p > q, zero otherwise.
  */
-int strncmp(const char *p, const char *q, uint n)
+int strncmp(const char *p, const char *q, u_int32 n)
 {
     while (n > 0 && *p && *p == *q) {
         n--, p++, q++;
@@ -190,7 +190,7 @@ int strncmp(const char *p, const char *q, uint n)
     if (n == 0) {
         return 0;
     }
-    return (u8)*p - (u8)*q;
+    return (u_char8)*p - (u_char8)*q;
 }
 
 
@@ -281,9 +281,9 @@ int strlen(const char *s)
  * @param d  - The denominator to divide by.
  * @return - The integer divisor of 'n' and 'd'.
  */
-uint div(uint n, uint d)
+u_int32 div(u_int32 n, u_int32 d)
 {
-    uint q = 0, r = 0;
+    u_int32 q = 0, r = 0;
     int i;
     for (i = 31; i >= 0; i--){
         r = r << 1;

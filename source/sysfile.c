@@ -183,7 +183,7 @@ sys_unlink(void)
   struct inode *ip, *dp;
   struct dirent de;
   char name[DIRSIZ], *path;
-  uint off;
+  u_int32 off;
 
   if(argstr(0, &path) < 0)
     return -1;
@@ -235,7 +235,7 @@ bad:
 static struct inode*
 create(char *path, short type, short major, short minor)
 {
-  uint off;
+  u_int32 off;
   struct inode *ip, *dp;
   char name[DIRSIZ];
 
@@ -380,7 +380,7 @@ sys_exec(void)
 {
   char *path, *argv[MAXARG];
   int i;
-  uint uargv, uarg;
+  u_int32 uargv, uarg;
 
   if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0){
     return -1;

@@ -27,23 +27,23 @@ static struct {
 } cons;
 
 
-uint cursor_x=0, cursor_y=0;
-uint frameheight=1024, framewidth=1280, framedepth=16;
-uint fontheight=16, fontwidth=8;
-FBI fbinfo __attribute__ ((aligned (16), nocommon));
+u_int32 cursor_x=0, cursor_y=0;
+u_int32 frameheight=1024, framewidth=1280, framedepth=16;
+u_int32 fontheight=16, fontwidth=8;
+frame_buf_desc fbinfo __attribute__ ((aligned (16), nocommon));
 
-extern volatile uint *mailbuffer;
-extern u8 font[];
-static uint gpucolour=0xffff;
+extern volatile u_int32 *mailbuffer;
+extern u_char8 font[];
+static u_int32 gpucolour=0xffff;
 
-void setgpucolour(u16 c)
+void setgpucolour(u_short16 c)
 {
 	gpucolour = c;
 }
 
 
 
-uint initframebuf(uint width, uint height, uint depth)
+u_int32 initframebuf(u_int32 width, u_int32 height, u_int32 depth)
 {
   
 
@@ -57,7 +57,7 @@ uint initframebuf(uint width, uint height, uint depth)
 	fbinfo.y = 0;
 	fbinfo.fbp = 0;
 	fbinfo.fbs = 0;
-	writemailbox((uint *)&fbinfo, 1);
+	writemailbox((u_int32 *)&fbinfo, 1);
 	return readmailbox(1);
 }
 
@@ -65,9 +65,9 @@ uint initframebuf(uint width, uint height, uint depth)
 struct {
 	struct spinlock lock;
 	char buf[INPUT_BUF];
-	uint r;  // Read index
-	uint w;  // Write index
-	uint e;  // Edit index
+	u_int32 r;  // Read index
+	u_int32 w;  // Write index
+	u_int32 e;  // Edit index
 } input;
 
 int
@@ -97,35 +97,35 @@ consolewrite(struct inode *ip, char *buf, int n)
 }
 
 
-void drawpixel(uint x, uint y)
+void drawpixel(u_int32 x, u_int32 y)
 {
-	u16 *addr;
+	u_short16 *addr;
 
 	if(x >= framewidth || y >= frameheight) return;
-	addr = (u16 *) fbinfo.fbp;
+	addr = (u_short16 *) fbinfo.fbp;
 	addr += y*framewidth + x;
 	*addr = gpucolour;
 	return;
 }
 
 
-void drawcursor(uint x, uint y)
+void drawcursor(u_int32 x, u_int32 y)
 {
-	u8 row, bit;
+	u_char8 row, bit;
 
 	for(row=0; row<15; row++)
 		for(bit=0; bit<8; bit++)
 			drawpixel(x+bit, y+row);
 }
 
-void drawcharacter(u8 c, uint x, uint y)
+void drawcharacter(u_char8 c, u_int32 x, u_int32 y)
 {
-	u8 *faddr;
-	u8 row, bit, bits;
-	uint tv;
+	u_char8 *faddr;
+	u_char8 row, bit, bits;
+	u_int32 tv;
 
 	if(c > 127) return;
-	tv = ((uint)c) << 4;
+	tv = ((u_int32)c) << 4;
 	faddr = font + tv;
 	for(row=0; row<15; row++){
 		bits = *(faddr+row);
@@ -138,7 +138,7 @@ void drawcharacter(u8 c, uint x, uint y)
 
 //static void
 void
-gpuputc(uint c)
+gpuputc(u_int32 c)
 {
 	#if defined (RPI1) || defined (RPI2)
 
@@ -148,7 +148,7 @@ gpuputc(uint c)
 		cursor_x = 0;
 		cursor_y += fontheight;
 		if(cursor_y >= frameheight) {
-			memmove((u8 *)fbinfo.fbp, (u8 *)fbinfo.fbp+framewidth*fontheight*2, (frameheight - fontheight)*framewidth*2);
+			memmove((u_char8 *)fbinfo.fbp, (u_char8 *)fbinfo.fbp+framewidth*fontheight*2, (frameheight - fontheight)*framewidth*2);
 			cursor_y = frameheight - fontheight;
 			setgpucolour(0);
 			while(cursor_x < framewidth) {
@@ -175,7 +175,7 @@ gpuputc(uint c)
 			cursor_x = 0;
 			cursor_y += fontheight;
 			if(cursor_y >= frameheight) {
-				memmove((u8 *)fbinfo.fbp, (u8 *)fbinfo.fbp+framewidth*fontheight*2, (frameheight - fontheight)*framewidth*2);
+				memmove((u_char8 *)fbinfo.fbp, (u_char8 *)fbinfo.fbp+framewidth*fontheight*2, (frameheight - fontheight)*framewidth*2);
 				cursor_y = frameheight - fontheight;
 				setgpucolour(0);
 				while(cursor_x < framewidth) {
@@ -195,10 +195,10 @@ gpuputc(uint c)
 static void
 printint(int xx, int base, int sign)
 {
-	static u8 digits[] = "0123456789abcdef";
-	u8 buf[16];
+	static u_char8 digits[] = "0123456789abcdef";
+	u_char8 buf[16];
 	int i;
-	uint x, y, b;
+	u_int32 x, y, b;
 
 	if(sign && (sign = xx < 0))
 		x = -xx;
@@ -235,7 +235,7 @@ cprintf(char *fmt, ...)
 {
 	int i, c;
 	int locking;
-	uint *argp;
+	u_int32 *argp;
 	char *s;
 
 	locking = cons.locking;
@@ -245,7 +245,7 @@ cprintf(char *fmt, ...)
 	if (fmt == 0)
 		panic("null fmt");
 
-	argp = (uint *)(void*)(&fmt + 1);
+	argp = (u_int32 *)(void*)(&fmt + 1);
 	for(i = 0; (c = fmt[i] & 0xff) != 0; i++){
 		if(c != '%'){
 			#if defined (RPI1)
@@ -323,7 +323,7 @@ void
 panic(char *s)
 {
 	int i;
-	uint pcs[10];
+	u_int32 pcs[10];
 
 	cprintf("cpu%d: panic: ", 0);
 	cprintf(s);
@@ -411,7 +411,7 @@ consoleintr(int (*getc)(void))
 int
 consoleread(struct inode *ip, char *dst, int n)
 {
-	uint target;
+	u_int32 target;
 	int c;
 
 	//cprintf("inside consoleread\n");
@@ -450,7 +450,7 @@ consoleread(struct inode *ip, char *dst, int n)
 void gpuinit()
 {
 	#if defined (RPI1) || defined (RPI2)
-	uint fbinforesp;
+	u_int32 fbinforesp;
 	fbinforesp = initframebuf(framewidth, frameheight, framedepth);
 	if(fbinforesp != 0){
 		fbinfo.fbp = 0;

@@ -12,9 +12,9 @@
 
 // Per-CPU state
 struct cpu {
-  uchar id;                    // Local APIC ID; index into cpus[] below
+  u_char8 id;                    // Local APIC ID; index into cpus[] below
   struct context *scheduler;   // swtch() here to enter scheduler
-  volatile uint started;       // Has the CPU started?
+  volatile u_int32 started;       // Has the CPU started?
   int ncli;                    // Depth of pushcli nesting.
   int intena;                  // Were interrupts enabled before pushcli?
   
@@ -52,24 +52,24 @@ struct cpu cpus[NCPU];
 // at the "Switch stacks" comment. Switch doesn't save eip explicitly,
 // but it is on the stack and allocproc() manipulates it.
 struct context {
-  uint r4;
-  uint r5;
-  uint r6;
-  uint r7;
-  uint r8;
-  uint r9;
-  uint r10;
-  uint r11;
-  uint r12;
-  uint lr;
-  uint pc;
+  u_int32 r4;
+  u_int32 r5;
+  u_int32 r6;
+  u_int32 r7;
+  u_int32 r8;
+  u_int32 r9;
+  u_int32 r10;
+  u_int32 r11;
+  u_int32 r12;
+  u_int32 lr;
+  u_int32 pc;
 };
 
 enum procstate { UNUSED=0, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
 struct proc {
-  uint sz;                     // Size of process memory (bytes)
+  u_int32 sz;                     // Size of process memory (bytes)
   pde_t* pgdir;                // Page table
   char *kstack;                // Bottom of kernel stack for this process
   enum procstate state;        // Process state

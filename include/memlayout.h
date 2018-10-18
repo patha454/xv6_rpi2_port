@@ -17,8 +17,8 @@
 
 #define TVSIZE          0x1000
 
-static inline uint v2p(void *a) { return ((uint) (a))  - (KERNBASE-PHYSTART); }
-static inline void *p2v(uint a) { return (void *) ((a) + (KERNBASE-PHYSTART)); }
+static inline u_int32 v2p(void *a) { return ((u_int32) (a))  - (KERNBASE-PHYSTART); }
+static inline void *p2v(u_int32 a) { return (void *) ((a) + (KERNBASE-PHYSTART)); }
 
 #define V2P(a) (((uint) (a)) - (KERNBASE-PHYSTART))
 #define P2V(a) (((void *) (a)) + (KERNBASE-PHYSTART))

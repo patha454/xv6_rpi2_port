@@ -52,17 +52,17 @@
 //  \--- PDX(va) --/ \--- PTX(va) --/
 
 // page directory index
-#define PDX(va)         (((uint)(va) >> PDXSHIFT) & 0xFFF)
+#define PDX(va)         (((u_int32)(va) >> PDXSHIFT) & 0xFFF)
 
 // page table index
-#define PTX(va)         (((uint)(va) >> PTXSHIFT) & 0xFF)
+#define PTX(va)         (((u_int32)(va) >> PTXSHIFT) & 0xFF)
 
 // construct virtual address from indexes and offset
 #define PGADDR(d, t, o) ((uint)((d) << PDXSHIFT | (t) << PTXSHIFT | (o)))
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
-#define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
+#define PTE_ADDR(pte)   ((u_int32)(pte) & ~0xFFF)
+#define PTE_FLAGS(pte)  ((u_int32)(pte) &  0xFFF)
 
 // Page directory and page table constants.
 #define NPDENTRIES      1024    // # directory entries per page directory

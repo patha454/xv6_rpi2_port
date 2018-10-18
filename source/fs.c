@@ -49,8 +49,8 @@ bzero(int dev, int bno)
 // Blocks. 
 
 // Allocate a zeroed disk block.
-static uint
-balloc(uint dev)
+static u_int32
+balloc(u_int32 dev)
 {
   int b, bi, m;
   struct buf *bp;
@@ -78,7 +78,7 @@ balloc(uint dev)
 
 // Free a disk block.
 static void
-bfree(int dev, uint b)
+bfree(int dev, u_int32 b)
 {
   struct buf *bp;
   struct superblock sb;
@@ -169,13 +169,13 @@ iinit(void)
   initlock(&icache.lock, "icache");
 }
 
-static struct inode* iget(uint dev, uint inum);
+static struct inode* iget(u_int32 dev, u_int32 inum);
 
 //PAGEBREAK!
 // Allocate a new inode with the given type on device dev.
 // A free inode has a type of zero.
 struct inode*
-ialloc(uint dev, short type)
+ialloc(u_int32 dev, short type)
 {
   int inum;
   struct buf *bp;
@@ -223,7 +223,7 @@ iupdate(struct inode *ip)
 // and return the in-memory copy. Does not lock
 // the inode and does not read it from disk.
 static struct inode*
-iget(uint dev, uint inum)
+iget(u_int32 dev, u_int32 inum)
 {
   struct inode *ip, *empty;
 
@@ -356,10 +356,10 @@ iunlockput(struct inode *ip)
 
 // Return the disk block address of the nth block in inode ip.
 // If there is no such block, bmap allocates one.
-static uint
-bmap(struct inode *ip, uint bn)
+static u_int32
+bmap(struct inode *ip, u_int32 bn)
 {
-  uint addr, *a;
+  u_int32 addr, *a;
   struct buf *bp;
 
   if(bn < NDIRECT){
@@ -374,7 +374,7 @@ bmap(struct inode *ip, uint bn)
     if((addr = ip->addrs[NDIRECT]) == 0)
       ip->addrs[NDIRECT] = addr = balloc(ip->dev);
     bp = bread(ip->dev, addr);
-    a = (uint*)bp->data;
+    a = (u_int32*)bp->data;
     if((addr = a[bn]) == 0){
       a[bn] = addr = balloc(ip->dev);
       log_write(bp);
@@ -397,7 +397,7 @@ itrunc(struct inode *ip)
 {
   int i, j;
   struct buf *bp;
-  uint *a;
+  u_int32 *a;
 
   for(i = 0; i < NDIRECT; i++){
     if(ip->addrs[i]){
@@ -408,7 +408,7 @@ itrunc(struct inode *ip)
   
   if(ip->addrs[NDIRECT]){
     bp = bread(ip->dev, ip->addrs[NDIRECT]);
-    a = (uint*)bp->data;
+    a = (u_int32*)bp->data;
     for(j = 0; j < NINDIRECT; j++){
       if(a[j])
         bfree(ip->dev, a[j]);
@@ -436,9 +436,9 @@ stati(struct inode *ip, struct stat *st)
 //PAGEBREAK!
 // Read data from inode.
 int
-readi(struct inode *ip, char *dst, uint off, uint n)
+readi(struct inode *ip, char *dst, u_int32 off, u_int32 n)
 {
-  uint tot, m;
+  u_int32 tot, m;
   struct buf *bp;
 
   if(ip->type == T_DEV){
@@ -465,9 +465,9 @@ readi(struct inode *ip, char *dst, uint off, uint n)
 // PAGEBREAK!
 // Write data to inode.
 int
-writei(struct inode *ip, char *src, uint off, uint n)
+writei(struct inode *ip, char *src, u_int32 off, u_int32 n)
 {
-  uint tot, m;
+  u_int32 tot, m;
   struct buf *bp;
 //cprintf("inside writei: type=%x major=%x, func addr: %x\n", ip->type, ip->major, devsw[ip->major].write);
   if(ip->type == T_DEV){
@@ -509,9 +509,9 @@ namecmp(const char *s, const char *t)
 // Look for a directory entry in a directory.
 // If found, set *poff to byte offset of entry.
 struct inode*
-dirlookup(struct inode *dp, char *name, uint *poff)
+dirlookup(struct inode *dp, char *name, u_int32 *poff)
 {
-  uint off, inum;
+  u_int32 off, inum;
   struct dirent de;
 
   if(dp->type != T_DIR)
@@ -536,7 +536,7 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 
 // Write a new directory entry (name, inum) into the directory dp.
 int
-dirlink(struct inode *dp, char *name, uint inum)
+dirlink(struct inode *dp, char *name, u_int32 inum)
 {
   int off;
   struct dirent de;

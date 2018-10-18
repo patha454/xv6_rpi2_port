@@ -5,7 +5,7 @@
 struct stat {
   short type;  // Type of file
   int dev;     // File system's disk device
-  uint ino;    // Inode number
+  u_int32 ino;    // Inode number
   short nlink; // Number of links to file
-  uint size;   // Size of file in bytes
+  u_int32 size;   // Size of file in bytes
 };

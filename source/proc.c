@@ -79,8 +79,8 @@ found:
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
-  p->context->pc = (uint)forkret;
-  p->context->lr = (uint)trapret;
+  p->context->pc = (u_int32)forkret;
+  p->context->lr = (u_int32)trapret;
 
   return p;
 }
@@ -92,9 +92,9 @@ userinit(void)
 {
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_end[];
-  uint _binary_initcode_size;
+  u_int32 _binary_initcode_size;
 
-  _binary_initcode_size = (uint)_binary_initcode_end - (uint)_binary_initcode_start;
+  _binary_initcode_size = (u_int32)_binary_initcode_end - (u_int32)_binary_initcode_start;
   p = allocproc();
 //cprintf("after allocproc: initcode start: %x end %x\n", _binary_initcode_start, _binary_initcode_end);
   initproc = p;
@@ -121,7 +121,7 @@ userinit(void)
 int
 growproc(int n)
 {
-  uint sz;
+  u_int32 sz;
 
   sz = curr_proc->sz;
   if(n > 0){
