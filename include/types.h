@@ -120,4 +120,8 @@ typedef struct frame_buf_desc {
 	u_int32 y;
 	u_int32 fbp;        /**< GPU framebuffer pointer. */
 	u_int32 fbs;        /**< GPY framebuffer size. */
+<<<<<<< HEAD
 } frame_buf_desc;
+=======
+} FBI;
+>>>>>>> 38e844fc7b15ee499d4dd57f4271337134a3ffe9
