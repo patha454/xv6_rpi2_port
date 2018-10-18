@@ -30,11 +30,7 @@ static struct {
 u_int32 cursor_x=0, cursor_y=0;
 u_int32 frameheight=1024, framewidth=1280, framedepth=16;
 u_int32 fontheight=16, fontwidth=8;
-<<<<<<< HEAD
 frame_buf_desc fbinfo __attribute__ ((aligned (16), nocommon));
-=======
-FBI fbinfo __attribute__ ((aligned (16), nocommon));
->>>>>>> 38e844fc7b15ee499d4dd57f4271337134a3ffe9
 
 extern volatile u_int32 *mailbuffer;
 extern u_char8 font[];
