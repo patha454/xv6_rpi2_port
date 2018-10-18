@@ -33,4 +33,22 @@ add_executable(dummy_kernel
         source/trap.c
         source/uart.c
         source/uart_pl011.c
-        source/vm.c)
+        source/vm.c
+        include/arm.h
+        include/buf.h
+        include/defs.h
+        include/elf.h
+        include/fcntl.h
+        include/file.h
+        include/fs.h
+        include/fvp.h
+        include/mailbox.h
+        include/memlayout.h
+        include/mmu.h
+        include/param.h
+        include/proc.h
+        include/spinlock.h
+        include/stat.h
+        include/syscall.h
+        include/traps.h
+        include/user.h)
