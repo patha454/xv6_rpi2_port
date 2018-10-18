@@ -11,16 +11,16 @@
 #include "spinlock.h"
 #include "buf.h"
 
-extern uchar _binary_fs_img_start[], _binary_fs_img_end[];
+extern u_char8 _binary_fs_img_start[], _binary_fs_img_end[];
 
 static int disksize;
-static uchar *memdisk;
+static u_char8 *memdisk;
 
 void
 ideinit(void)
 {
   memdisk = _binary_fs_img_start;
-  disksize = div(((uint)_binary_fs_img_end - (uint)_binary_fs_img_start), 512);
+  disksize = div(((u_int32)_binary_fs_img_end - (u_int32)_binary_fs_img_start), 512);
 }
 
 // Interrupt handler.
@@ -36,7 +36,7 @@ ideintr(void)
 void
 iderw(struct buf *b)
 {
-  uchar *p;
+  u_char8 *p;
 
   if(!(b->flags & B_BUSY))
     panic("iderw: buf not busy");

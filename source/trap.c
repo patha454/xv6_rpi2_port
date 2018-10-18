@@ -16,50 +16,50 @@
 #include "traps.h"
 #include "spinlock.h"
 
-extern u8 *vectors;
+extern u_char8 *vectors;
 
 void cprintf(char*, ...);
 void dsb_barrier(void);
 void flush_idcache(void);
-void *memmove(void *dst, const void *src, uint n);
-void set_mode_sp(char *, uint);
+void *memmove(void *dst, const void *src, u_int32 n);
+void set_mode_sp(char *, u_int32);
 
 struct spinlock tickslock;
-uint ticks;
+u_int32 ticks;
 
 void enable_intrs(void)
 {
-        intctrlregs *ip;
+        int_ctrl_regs *ip;
 
-        ip = (intctrlregs *)INT_REGS_BASE;
-        ip->gpuenable[0] |= 1 << 29;   // enable the miniuart through Aux
-        //ip->gpuenable[1] |= 1 << 25; // enable uart
-        ip->armenable |= 1 << 0;       // enable the system timer
+        ip = (int_ctrl_regs *)INT_REGS_BASE;
+        ip->gpu_enable[0] |= 1 << 29;   // enable the miniuart through Aux
+        //ip->gpu_enable[1] |= 1 << 25; // enable uart
+        ip->arm_enable |= 1 << 0;       // enable the system timer
 }
 
 
 void disable_intrs(void)
 {
-        intctrlregs *ip;
+        int_ctrl_regs *ip;
         int disable;
 
-        ip = (intctrlregs *)INT_REGS_BASE;
+        ip = (int_ctrl_regs *)INT_REGS_BASE;
         disable = ~0;
-        ip->gpudisable[0] = disable;
-        ip->gpudisable[1] = disable;
-        ip->armdisable = disable;
-        ip->fiqctrl = 0;
+        ip->gpu_disable[0] = disable;
+        ip->gpu_disable[1] = disable;
+        ip->arm_disable = disable;
+        ip->fiq_control = 0;
 }
 
 
 void tvinit(void)
 {
-	uint *d, *s;
+	u_int32 *d, *s;
 	char *ptr;
 
 	/* initialize the exception vectors */
-	d = (uint *)HVECTORS;
-	s = (uint *)&vectors;
+	d = (u_int32 *)HVECTORS;
+	s = (u_int32 *)&vectors;
 	memmove(d, s, sizeof(Vpage0));
 
 	/* cacheuwbinv(); drain write buffer and prefetch buffer
@@ -103,18 +103,18 @@ cprintf("More registers: r6: %x, r7: %x, r8: %x, r9: %x, r10: %x, r11: %x, r12: 
 
 void handle_irq(struct trapframe *tf)
 {
-	intctrlregs *ip;
+	int_ctrl_regs *ip;
 
 /*cprintf("trapno: %x, spsr: %x, sp: %x, lr: %x cpsr: %x ifar: %x\n", tf->trapno, tf->spsr, tf->sp, tf->pc, tf->cpsr, tf->ifar);
 cprintf("Saved registers: r0: %x, r1: %x, r2: %x, r3: %x, r4: %x, r5: %x, r6: %x\n", tf->r0, tf->r1, tf->r2, tf->r3, tf->r4, tf->r5, tf->r6);
 cprintf("More registers: r6: %x, r7: %x, r8: %x, r9: %x, r10: %x, r11: %x, r12: %x, r13: %x, r14: %x\n", tf->r7, tf->r8, tf->r9, tf->r10, tf->r11, tf->r12, tf->r13, tf->r14);
 */
-	ip = (intctrlregs *)INT_REGS_BASE;
-	while(ip->gpupending[0] || ip->gpupending[1] || ip->armpending){
-	    if(ip->gpupending[0] & (1 << 3)) {
+	ip = (int_ctrl_regs *)INT_REGS_BASE;
+	while(ip->gpu_pending[0] || ip->gpu_pending[1] || ip->arm_pending){
+	    if(ip->gpu_pending[0] & (1 << 3)) {
 		timer3intr();
 	    }
-	    if(ip->gpupending[0] & (1 << 29)) {
+	    if(ip->gpu_pending[0] & (1 << 29)) {
 		miniuartintr();
 	    }
 	}
@@ -126,8 +126,8 @@ cprintf("More registers: r6: %x, r7: %x, r8: %x, r9: %x, r10: %x, r11: %x, r12: 
 void
 trap(struct trapframe *tf)
 {
-	intctrlregs *ip;
-	uint istimer;
+	int_ctrl_regs *ip;
+	u_int32 istimer;
 
 //cprintf("Trap %d from cpu %d eip %x (cr2=0x%x)\n",
 //              tf->trapno, curr_cpu->id, tf->eip, 0);
@@ -145,13 +145,13 @@ trap(struct trapframe *tf)
   istimer = 0;
   switch(tf->trapno){
   case T_IRQ:
-	ip = (intctrlregs *)INT_REGS_BASE;
-	while(ip->gpupending[0] || ip->gpupending[1] || ip->armpending){
-	    if(ip->gpupending[0] & (1 << IRQ_TIMER3)) {
+	ip = (int_ctrl_regs *)INT_REGS_BASE;
+	while(ip->gpu_pending[0] || ip->gpu_pending[1] || ip->arm_pending){
+	    if(ip->gpu_pending[0] & (1 << IRQ_TIMER3)) {
 		istimer = 1;
 		timer3intr();
 	    }
-	    if(ip->gpupending[0] & (1 << IRQ_MINIUART)) {
+	    if(ip->gpu_pending[0] & (1 << IRQ_MINIUART)) {
 		miniuartintr();
 	    }
 	}

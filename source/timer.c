@@ -30,17 +30,17 @@
 void 
 enabletimer3irq(void)
 {
-        intctrlregs *ip;
+        int_ctrl_regs *ip;
 
-        ip = (intctrlregs *)INT_REGS_BASE;
-        ip->gpuenable[0] |= 1 << IRQ_TIMER3; // enable the system timer3 irq
+        ip = (int_ctrl_regs *)INT_REGS_BASE;
+        ip->gpu_enable[0] |= 1 << IRQ_TIMER3; // enable the system timer3 irq
 }
 
 
 void 
 timer3init(void)
 {
-uint v;
+u_int32 v;
 
 	enabletimer3irq();
 
@@ -54,7 +54,7 @@ uint v;
 void 
 timer3intr(void)
 {
-uint v;
+u_int32 v;
 //cprintf("timer3 interrupt: %x\n", inw(TIMER_REGS_BASE+CONTROL_STATUS));
 	outw(TIMER_REGS_BASE+CONTROL_STATUS, (1 << IRQ_TIMER3)); // clear timer3 irq
 
@@ -68,7 +68,7 @@ uint v;
 }
 
 void
-delay(uint m)
+delay(u_int32 m)
 {
 	unsigned long long t;
 

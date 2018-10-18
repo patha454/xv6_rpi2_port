@@ -28,17 +28,17 @@
 #define PSR_N			0x80000000
 
 
-static inline uint
-inw(uint addr)
+static inline u_int32
+inw(u_int32 addr)
 {
-    uint data;
+    u_int32 data;
 
     asm volatile("ldr %0,[%1]" : "=r"(data) : "r"(addr));
     return data;
 }
 
 static inline void
-outw(uint addr, uint data)
+outw(u_int32 addr, u_int32 data)
 {
     asm volatile("str %1,[%0]" : : "r"(addr), "r"(data));
 }
@@ -47,26 +47,26 @@ outw(uint addr, uint data)
 // Layout of the trap frame built on the stack
 // by exception.s, and passed to trap().
 struct trapframe {
-  uint sp; // user mode sp
-  uint r0;
-  uint r1; 
-  uint r2;
-  uint r3;
-  uint r4;
-  uint r5;
-  uint r6;
-  uint r7;
-  uint r8;
-  uint r9;
-  uint r10;
-  uint r11;
-  uint r12;
-  uint r13;
-  uint r14;
-  uint trapno;
-  uint ifar; // Instruction Fault Address Register (IFAR)
-  uint cpsr;
-  uint spsr; // saved cpsr from the trapped/interrupted mode
-  uint pc; // return address of the interrupted code
+  u_int32 sp; // user mode sp
+  u_int32 r0;
+  u_int32 r1;
+  u_int32 r2;
+  u_int32 r3;
+  u_int32 r4;
+  u_int32 r5;
+  u_int32 r6;
+  u_int32 r7;
+  u_int32 r8;
+  u_int32 r9;
+  u_int32 r10;
+  u_int32 r11;
+  u_int32 r12;
+  u_int32 r13;
+  u_int32 r14;
+  u_int32 trapno;
+  u_int32 ifar; // Instruction Fault Address Register (IFAR)
+  u_int32 cpsr;
+  u_int32 spsr; // saved cpsr from the trapped/interrupted mode
+  u_int32 pc; // return address of the interrupted code
 };
 

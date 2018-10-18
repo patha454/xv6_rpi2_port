@@ -19,7 +19,7 @@
 #define FVP_PL011_UARTIMSC (FVP_PL011_BASE+0x38)	// Interrupt mask set/clear register
 #define FVP_PL011_UARTIMSC_RXIM (1<<4)			// Receive interrupt mask.
 
-//#define FVP_GLOBAL_TIMER_BASE	((uint) &__va_private_start + 0x0200 )
+//#define FVP_GLOBAL_TIMER_BASE	((u_int32) &__va_private_start + 0x0200 )
 #define FVP_GLOBAL_TIMER_BASE	(MMIO_VA + 0x110000)
 #define FVP_TIMER1_LOAD			FVP_GLOBAL_TIMER_BASE
 #define FVP_TIMER1_VALUE		( FVP_GLOBAL_TIMER_BASE	+ 0x4 )

@@ -23,7 +23,7 @@
 
 // Fetch the int at addr from the current process.
 int
-fetchint(uint addr, int *ip)
+fetchint(u_int32 addr, int *ip)
 {
   if(addr >= curr_proc->sz || addr+4 > curr_proc->sz)
     return -1;
@@ -35,7 +35,7 @@ fetchint(uint addr, int *ip)
 // Doesn't actually copy the string - just sets *pp to point at it.
 // Returns length of string, not including nul.
 int
-fetchstr(uint addr, char **pp)
+fetchstr(u_int32 addr, char **pp)
 {
   char *s, *ep;
 
@@ -66,7 +66,7 @@ argptr(int n, char **pp, int size)
   
   if(argint(n, &i) < 0)
     return -1;
-  if((uint)i >= curr_proc->sz || (uint)i+size > curr_proc->sz)
+  if((u_int32)i >= curr_proc->sz || (u_int32)i+size > curr_proc->sz)
     return -1;
   *pp = (char*)i;
   return 0;

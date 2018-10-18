@@ -60,7 +60,7 @@ release(struct spinlock *lk)
 
 // Record the current call stack in pcs[] by following the %ebp chain.
 void
-getcallerpcs(void *v, uint pcs[])
+getcallerpcs(void *v, u_int32 pcs[])
 {
 }
 
@@ -85,7 +85,7 @@ int rv;
 void
 pushcli(void)
 {
-  uint cpsr;
+  u_int32 cpsr;
   cpsr = readcpsr();
   cli();
   if(curr_cpu->ncli++ == 0)

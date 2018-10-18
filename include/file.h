@@ -5,14 +5,14 @@ struct file {
   char writable;
   struct pipe *pipe;
   struct inode *ip;
-  uint off;
+  u_int32 off;
 };
 
 
 // in-memory copy of an inode
 struct inode {
-  uint dev;           // Device number
-  uint inum;          // Inode number
+  u_int32 dev;           // Device number
+  u_int32 inum;          // Inode number
   int ref;            // Reference count
   int flags;          // I_BUSY, I_VALID
 
@@ -20,8 +20,8 @@ struct inode {
   short major;
   short minor;
   short nlink;
-  uint size;
-  uint addrs[NDIRECT+1];
+  u_int32 size;
+  u_int32 addrs[NDIRECT+1];
 };
 #define I_BUSY 0x1
 #define I_VALID 0x2

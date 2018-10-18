@@ -42,9 +42,9 @@
 #define AUX_MU_BAUD_REG (MMIO_VA+0x215068)
 
 void
-setgpioval(uint pin, uint val)
+setgpioval(u_int32 pin, u_int32 val)
 {
-	uint sel, ssel, rsel, shift;
+	u_int32 sel, ssel, rsel, shift;
 
 	if(pin > 53) return;
 	if(pin >= 32) sel = 1; else sel = 0;
@@ -58,9 +58,9 @@ setgpioval(uint pin, uint val)
 
 
 void
-setgpiofunc(uint pin, uint func)
+setgpiofunc(u_int32 pin, u_int32 func)
 {
-	uint sel, data, shift;
+	u_int32 sel, data, shift;
 
 	if(pin > 53) return;
 	sel = 0;
@@ -79,7 +79,7 @@ setgpiofunc(uint pin, uint func)
 
 
 void 
-uartputc(uint c)
+uartputc(u_int32 c)
 {
 	if(c=='\n') {
 		while(1) if(inw(AUX_MU_LSR_REG) & 0x20) break;
@@ -99,10 +99,10 @@ uartgetc(void)
 void 
 enableirqminiuart(void)
 {
-        intctrlregs *ip;
+        int_ctrl_regs *ip;
 
-        ip = (intctrlregs *)INT_REGS_BASE;
-        ip->gpuenable[0] |= (1 << 29);   // enable the miniuart through Aux
+        ip = (int_ctrl_regs *)INT_REGS_BASE;
+        ip->gpu_enable[0] |= (1 << 29);   // enable the miniuart through Aux
 }
 
 

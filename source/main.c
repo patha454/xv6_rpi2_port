@@ -17,7 +17,7 @@
 
 extern char end[]; // first address after kernel loaded from ELF file
 extern pde_t *kpgdir;
-extern volatile uint *mailbuffer;
+extern volatile u_int32 *mailbuffer;
 extern unsigned int pm_size;
 
 void OkLoop()
@@ -45,7 +45,7 @@ void NotOkLoop()
 unsigned int getpmsize()
 {
     create_request(mailbuffer, MPI_TAG_GET_ARM_MEMORY, 8, 0, 0);
-    writemailbox((uint *)mailbuffer, 8);
+    writemailbox((u_int32 *)mailbuffer, 8);
     readmailbox(8);
     if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_ARM_MEMORY);
     return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1];
@@ -59,7 +59,7 @@ void machinit(void)
 
 void enableirqminiuart(void);
 
-uint mb_data[10];
+u_int32 mb_data[10];
 
 int cmain()
 {
