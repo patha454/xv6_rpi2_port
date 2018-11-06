@@ -1,9 +1,18 @@
-/*****************************************************************
-*       trap.c
-*       by Zhiyi Huang, hzy@cs.otago.ac.nz
-*       University of Otago
-*
-********************************************************************/
+/**
+ * @file trap.c
+ *
+ * trap.c provides a trap handling system.
+ *
+ * trap.c provides the trap handling system in ARM xv6, including
+ * setting up the trap vector, handling interrupt requests, and
+ * enabling or disabling interrupts.
+ *
+ *  @author Zhiyi Huang, University of Otago, hzy@cs.otago.ac.nz
+ * (Adaption from MIT XV6.)
+ *
+ *  @author H Paterson, University of Otago, patha454@student.otago.ac.nz
+ * (Documentation, styling, and refactoring.)
+ */
 
 
 #include "types.h"
@@ -16,39 +25,87 @@
 #include "traps.h"
 #include "spinlock.h"
 
+
+/**
+ * 'vectors' is a pointer to the trap vector in the assembly data segment.
+ * @see exception.s
+ */
 extern u_char8 *vectors;
 
-void cprintf(char*, ...);
-void dsb_barrier(void);
-void flush_idcache(void);
-void *memmove(void *dst, const void *src, u_int32 n);
-void set_mode_sp(char *, u_int32);
 
-struct spinlock tickslock;
+/**
+ * set_mode_sp ('Set CPU mode and stack pointer") sets the stack pointer
+ * for a given CPU mode.
+ *
+ * ARM requires the OS to initialize the stack pointer (SP) for each
+ * CPU mode which will be used. set_mode_sp provides a mechanisms
+ * to initialize (or change) the stack pointer for each mode.
+ *
+ * set_mode_sp is implemented in assembly.
+ * @see exception.s
+ *
+ * @warning set_mode_sp will disable IRQ and FIQ for each mode the
+ * function is called on.
+ *
+ * @param sp - The address to use as the new stack pointer.
+ * @param cpsr_c - The mode to set the SP for, encoded as the CPSR mode field. *
+ */
+void set_mode_sp(char * sp, u_int32 cpsr_c);
+
+
+/**
+ * The number of times the system clock has 'ticked.'
+ *
+ * @todo - Move this to timer.c. 'ticks' has nothing to do with the
+ * trap implementation.
+ */
 u_int32 ticks;
 
+
+/**
+ * A lock of the system clock variable 'ticks'.
+ *
+ * @todo _ Move this to timer.c 'ticks_lock' has nothing to do with the
+ * trap implementation.
+ */
+struct spinlock ticks_lock;
+
+
+/**
+ * Enables interrupts from selected sources.
+ *
+ * enable_inters enables interrupts from the following sources:
+ * - Mini UART
+ * - System clock.
+ */
 void enable_intrs(void)
 {
-        int_ctrl_regs *ip;
-
-        ip = (int_ctrl_regs *)INT_REGS_BASE;
-        ip->gpu_enable[0] |= 1 << 29;   // enable the miniuart through Aux
-        //ip->gpu_enable[1] |= 1 << 25; // enable uart
-        ip->arm_enable |= 1 << 0;       // enable the system timer
+    int_ctrl_regs* ip = (int_ctrl_regs*) INT_REGS_BASE;
+    /* Enable the mini UART throuh the (SPI?) Aux. */
+    ip->irq_enable[0] |= 1 << 29;
+    /* Enable UART IRQ. */
+    //ip->irq_enable[1] |= 1 << 25;
+    /* Enable the system clock IRQ. */
+    ip->irq_basic_enable |= 1 << 0;
 }
 
 
+/**
+ * Disables interrupts from all sources.
+ *
+ * disable_intrs disables both IRQ and FIQ interrupts from all sources
+ * and devices.
+ */
 void disable_intrs(void)
 {
-        int_ctrl_regs *ip;
-        int disable;
-
-        ip = (int_ctrl_regs *)INT_REGS_BASE;
-        disable = ~0;
-        ip->gpu_disable[0] = disable;
-        ip->gpu_disable[1] = disable;
-        ip->arm_disable = disable;
-        ip->fiq_control = 0;
+    int_ctrl_regs *ip;
+    u_int32 disable;
+    ip = (int_ctrl_regs *)INT_REGS_BASE;
+    disable = (u_int32) 0;
+    ip->irq_disable[0] = disable;
+    ip->irq_disable[1] = disable;
+    ip->irq_basic_disable = disable;
+    ip->fiq_control = 0;
 }
 
 
@@ -110,11 +167,11 @@ cprintf("Saved registers: r0: %x, r1: %x, r2: %x, r3: %x, r4: %x, r5: %x, r6: %x
 cprintf("More registers: r6: %x, r7: %x, r8: %x, r9: %x, r10: %x, r11: %x, r12: %x, r13: %x, r14: %x\n", tf->r7, tf->r8, tf->r9, tf->r10, tf->r11, tf->r12, tf->r13, tf->r14);
 */
 	ip = (int_ctrl_regs *)INT_REGS_BASE;
-	while(ip->gpu_pending[0] || ip->gpu_pending[1] || ip->arm_pending){
-	    if(ip->gpu_pending[0] & (1 << 3)) {
+	while(ip->irq_pending[0] || ip->irq_pending[1] || ip->irq_basic_pending){
+	    if(ip->irq_pending[0] & (1 << 3)) {
 		timer3intr();
 	    }
-	    if(ip->gpu_pending[0] & (1 << 29)) {
+	    if(ip->irq_pending[0] & (1 << 29)) {
 		miniuartintr();
 	    }
 	}
@@ -146,12 +203,12 @@ trap(struct trapframe *tf)
   switch(tf->trapno){
   case T_IRQ:
 	ip = (int_ctrl_regs *)INT_REGS_BASE;
-	while(ip->gpu_pending[0] || ip->gpu_pending[1] || ip->arm_pending){
-	    if(ip->gpu_pending[0] & (1 << IRQ_TIMER3)) {
+	while(ip->irq_pending[0] || ip->irq_pending[1] || ip->irq_basic_pending){
+	    if(ip->irq_pending[0] & (1 << IRQ_TIMER3)) {
 		istimer = 1;
 		timer3intr();
 	    }
-	    if(ip->gpu_pending[0] & (1 << IRQ_MINIUART)) {
+	    if(ip->irq_pending[0] & (1 << IRQ_MINIUART)) {
 		miniuartintr();
 	    }
 	}
