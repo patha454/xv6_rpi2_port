@@ -74,6 +74,9 @@ typedef struct Vpage0 {
  * Each address refers to a 32 bit control register.
  *
  * Refer to the 'BCM2835 ARM Peripherals' document from Broadcom, Section 7.5.
+ *
+ * @warning - Many of these appear not to be directly related to the ARM cores
+ * or GPU cores. See the BCM documentation. These variables could be renamed?
  */
 /* ARM interrupt control registers */
 typedef struct int_ctrl_regs {
@@ -83,7 +86,12 @@ typedef struct int_ctrl_regs {
     /** @var gpu_pending - Two registers showing GPU interrupts. */
     u_int32  gpu_pending[2];
 
-    /** @var fiq_control - Sets which source can generate a FIQ. */
+    /**
+     * @var fiq_control - Sets which source can generate a FIQ.
+     * When enabling FIQ for a source, ensure IRQ is disabled
+     * for the same source. Otherwise, one event will fire an
+     * IRQ and FIQ at the same time - this is bad.
+     * */
     u_int32  fiq_control;
 
     /** @var gpu_enable - Interrupt enable register 1 & 2.
