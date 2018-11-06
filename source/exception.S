@@ -159,17 +159,25 @@ _backtouser:
 	movs pc, lr  /* subs pc,lr,#0 */
 
 
+/**
+* set_mode_sp is used set the stack pointer for a given CPU mode.
+*
+* @param r0 - The address to use as the new stack pointer.
+* @param r1 - The CPU mode the stack pointer is for, given as a
+*             CPSR mode bit pattern.
+*/
 .global set_mode_sp
 set_mode_sp:
-	mrs r2, cpsr
-	msr cpsr_c,r1
-	mov sp, r0
-	mrs r0, cpsr
-	orr r0, #0x00000080 /* PSR_DISABLE_IRQ */
-	orr r0, #0x00000040 /* PSR_DISABLE_FIQ */
-	msr cpsr, r0
-	msr cpsr_c, r2
-	bx lr
+	mrs r2, cpsr        @ Save the old mode and state to the working registers.
+	msr cpsr_c,r1       @ Set the new CPU mode, etc, passed in as an argument.
+	mov sp, r0          @ Set the new stack pointer, passed in as an argument.
+	mrs r0, cpsr        @ Copy the new CPSR to the working registers.
+	orr r0, #0x00000080 @ Disable IRQ interrupts.
+	orr r0, #0x00000040 @ Disable FIQ interrupts.
+	msr cpsr, r0        @ Execute the IRQ and FIQ disable for the given mode.
+	msr cpsr_c, r2      @ Return to the mode and state to original.
+	bx lr               @ Return.
+
 
 .global readcpsr
 readcpsr:
