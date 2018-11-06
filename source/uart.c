@@ -102,7 +102,7 @@ enableirqminiuart(void)
         int_ctrl_regs *ip;
 
         ip = (int_ctrl_regs *)INT_REGS_BASE;
-        ip->gpu_enable[0] |= (1 << 29);   // enable the miniuart through Aux
+        ip->irq_enable[0] |= (1 << 29);   // enable the miniuart through Aux
 }
 
 

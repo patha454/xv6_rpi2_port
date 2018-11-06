@@ -74,45 +74,47 @@ typedef struct Vpage0 {
  * Each address refers to a 32 bit control register.
  *
  * Refer to the 'BCM2835 ARM Peripherals' document from Broadcom, Section 7.5.
- *
- * @warning - Many of these appear not to be directly related to the ARM cores
- * or GPU cores. See the BCM documentation. These variables could be renamed?
  */
 /* ARM interrupt control registers */
 typedef struct int_ctrl_regs {
-    /** @var arm_pending - Shows which interrupts are pending. */
-    u_int32  arm_pending;
+    /** @var irq_basic_pending - Shows which IRQ interrupts are pending. */
+    u_int32  irq_basic_pending;
 
-    /** @var gpu_pending - Two registers showing GPU interrupts. */
-    u_int32  gpu_pending[2];
+    /**
+     * @var irq_pending - Indicates which devices have interrupts pending.
+     *
+     * These are also called "GPU pending" registers in the BCM datasheet,
+     * because most of these refer to GPU interrupt sources.*/
+    u_int32  irq_pending[2];
 
     /**
      * @var fiq_control - Sets which source can generate a FIQ.
+     *
      * When enabling FIQ for a source, ensure IRQ is disabled
      * for the same source. Otherwise, one event will fire an
      * IRQ and FIQ at the same time - this is bad.
      * */
     u_int32  fiq_control;
 
-    /** @var gpu_enable - Interrupt enable register 1 & 2.
+    /** @var irq_enable - Interrupt enable register 1 & 2.
      *
-     * According to the BCM2835, these two registers set which
-     * devices' interrupts are visible in the 'gpu_pending' registers.
+     * These two registers set which devices can fire interrupts which will
+     * are visible in the 'irq_pending' registers.
      */
-    u_int32  gpu_enable[2];
+    u_int32  irq_enable[2];
 
-    /** @var arm_enable - Base interrupt enable register.
+    /** @var irq_basic_enable - Basic interrupt enable register.
      *
-     * Controls which devices' interrupts are visible in the 'arm_pending'
+     * Controls which devices' interrupts are visible in the 'irq_basic_pending'
      * register.
      */
-    u_int32  arm_enable;
+    u_int32  irq_basic_enable;
 
-    /** @var gpu_disable - Disables GPU devices' interrupts from being visible. */
-    u_int32  gpu_disable[2];
+    /** @var irq_disable - Disables IRQ devices' interrupts from being visible. */
+    u_int32  irq_disable[2];
 
-    /** @var arm_disable - Disables ARM devices' interrupts from being visible. */
-    u_int32  arm_disable;
+    /** @var irq_basic_disable - Disables basic interrupts from being visible. */
+    u_int32  irq_basic_disable;
 } int_ctrl_regs;
 
 

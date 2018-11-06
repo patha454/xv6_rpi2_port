@@ -33,7 +33,7 @@ enabletimer3irq(void)
         int_ctrl_regs *ip;
 
         ip = (int_ctrl_regs *)INT_REGS_BASE;
-        ip->gpu_enable[0] |= 1 << IRQ_TIMER3; // enable the system timer3 irq
+        ip->irq_enable[0] |= 1 << IRQ_TIMER3; // enable the system timer3 irq
 }
 
 
