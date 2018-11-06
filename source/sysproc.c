@@ -63,16 +63,16 @@ sys_sleep(void)
   
   if(argint(0, &n) < 0)
     return -1;
-  acquire(&tickslock);
+  acquire(&ticks_lock);
   ticks0 = ticks;
   while(ticks - ticks0 < n){
     if(curr_proc->killed){
-      release(&tickslock);
+      release(&ticks_lock);
       return -1;
     }
-    sleep(&ticks, &tickslock);
+    sleep(&ticks, &ticks_lock);
   }
-  release(&tickslock);
+  release(&ticks_lock);
   return 0;
 }
 
@@ -83,8 +83,8 @@ sys_uptime(void)
 {
   u_int32 xticks;
   
-  acquire(&tickslock);
+  acquire(&ticks_lock);
   xticks = ticks;
-  release(&tickslock);
+  release(&ticks_lock);
   return xticks;
 }

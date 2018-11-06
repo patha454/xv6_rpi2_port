@@ -193,7 +193,7 @@ void		cli(void);
 void 		disable_intrs(void);
 void 		enable_intrs(void);
 extern u_int32     ticks;
-extern struct spinlock tickslock;
+extern struct spinlock ticks_lock;
 u_int32		readcpsr(void);
 
 // uart.c
