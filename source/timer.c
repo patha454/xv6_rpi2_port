@@ -33,7 +33,7 @@ enabletimer3irq(void)
         int_ctrl_regs *ip;
 
         ip = (int_ctrl_regs *)INT_REGS_BASE;
-        ip->irq_enable[0] |= 1 << IRQ_TIMER3; // enable the system timer3 irq
+        ip->irq_enable[0] |= 1 << IRQ_TIMER_BIT; // enable the system timer3 irq
 }
 
 
@@ -56,7 +56,7 @@ timer3intr(void)
 {
 u_int32 v;
 //cprintf("timer3 interrupt: %x\n", inw(TIMER_REGS_BASE+CONTROL_STATUS));
-	outw(TIMER_REGS_BASE+CONTROL_STATUS, (1 << IRQ_TIMER3)); // clear timer3 irq
+	outw(TIMER_REGS_BASE+CONTROL_STATUS, (1 << IRQ_TIMER_BIT)); // clear timer3 irq
 
 	ticks++;
 	wakeup(&ticks);
