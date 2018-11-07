@@ -230,7 +230,7 @@ dsb_barrier:
 	mov r0, #0                  @ Set opcode for a memory barrier.
 	mcr p15, 0, r0, c7, c10, 4  @ Request ARM coprocessor flushes the memory.
 	/* RPi 2/3 version. */
-	#else                       
+	#else
 	dsb                         @ Data synchronization barrier.
 	isb                         @ Flush instruction pipeline.
 	#endif
@@ -249,20 +249,31 @@ flush_dcache_all:
 	isb
 	#endif
 	bx lr
+
+/**
+ * Flush instruction cache and data cache.
+ *
+ * flush_idcache invalidates the data cache and instruciton cacce,
+ * all further data and instructions must be fetched from the RAM.
+ */
 .global flush_idcache
 flush_idcache:
+    /* RPi 1 version. */
 	#ifdef RPI1
 	mov r0, #0
-	mcr p15, 0, r0, c7, c10, 4 /* dsb */
+	mcr p15, 0, r0, c7, c10, 4  @ Request coprocessor impliement a data barrier.
 	mov r0, #0
-	mcr p15, 0, r0, c7, c14, 0 /* invalidate d-cache */
+	mcr p15, 0, r0, c7, c14, 0  @ Invalidate the data cache.
 	mov r0, #0
-	mcr p15, 0, r0, c7, c5, 0 /* invalidate i-cache */
+	mcr p15, 0, r0, c7, c5, 0   @ Invalidate the instruction cache.
+	/* RPi 2/3 version. */
 	#else
-	dsb
-	isb
+	dsb                         @ Data synchronization barrer.
+	isb                         @ Instruction synchronisation barrer.
 	#endif
-	bx lr
+	bx lr                       @ Return.
+
+
 .global flush_tlb
 flush_tlb:
 	#ifdef RPI1
