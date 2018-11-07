@@ -90,8 +90,8 @@ int cmain()
   mmuinit1();
   gpuinit();
   pinit();
-  tvinit();
-  cprintf("it is ok after tvinit\n");
+  tv_init();
+  cprintf("it is ok after tv_init\n");
   binit();
 cprintf("it is ok after binit\n");
   fileinit();

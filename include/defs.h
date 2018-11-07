@@ -187,7 +187,7 @@ unsigned long long getsystemtime(void);
 void		delay(u_int32);
 
 // trap.c
-void            tvinit(void);
+void            tv_init(void);
 void		sti(void);
 void		cli(void);
 void 		disable_intrs(void);
@@ -195,6 +195,7 @@ void 		enable_intrs(void);
 extern u_int32     ticks;
 extern struct spinlock ticks_lock;
 u_int32		readcpsr(void);
+void init_mode_stack(u_int32 mode);
 
 // uart.c
 void            uartinit(void);

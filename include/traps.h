@@ -15,7 +15,7 @@
 #define T_PABT		0x02	// prefetch abort
 #define T_DABT		0x04	// data abort
 
-#define IRQ_TIMER3	3
+#define IRQ_TIMER3	    3
 #define IRQ_MINIUART	29
 
 #define INT_REGS_BASE 	(MMIO_VA+0xB200)
