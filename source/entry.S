@@ -217,16 +217,26 @@ acknowledge:
 
 	bx lr
 
+
+/**
+ * dsb_barrier provides a memory barrier which enforces all memory
+ * accesses which came before a call to dsb_barrier must complete
+ * before execution can continue.
+ */
 .global dsb_barrier
 dsb_barrier:
+    /* RPi 1 version. */
 	#ifdef RPI1
-	mov r0, #0
-	mcr p15, 0, r0, c7, c10, 4
-	#else
-	dsb
-	isb
+	mov r0, #0                  @ Set opcode for a memory barrier.
+	mcr p15, 0, r0, c7, c10, 4  @ Request ARM coprocessor flushes the memory.
+	/* RPi 2/3 version. */
+	#else                       
+	dsb                         @ Data synchronization barrier.
+	isb                         @ Flush instruction pipeline.
 	#endif
-	bx lr
+	bx lr                       @ Return
+
+
 .global flush_dcache_all
 flush_dcache_all:
 	#ifdef RPI1
