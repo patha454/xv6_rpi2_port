@@ -7,10 +7,10 @@
  * setting up the trap vector, handling interrupt requests, and
  * enabling or disabling interrupts.
  *
- *  @author Zhiyi Huang, University of Otago, hzy@cs.otago.ac.nz
+ * @author Zhiyi Huang, University of Otago, hzy@cs.otago.ac.nz
  * (Adaption from MIT XV6.)
  *
- *  @author H Paterson, University of Otago, patha454@student.otago.ac.nz
+ * @author H Paterson, University of Otago, patha454@student.otago.ac.nz
  * (Documentation, styling, and refactoring.)
  */
 
@@ -65,7 +65,7 @@ u_int32 ticks;
 /**
  * A lock of the system clock variable 'ticks'.
  *
- * @todo _ Move this to timer.c 'ticks_lock' has nothing to do with the
+ * @todo - Move this to timer.c 'ticks_lock' has nothing to do with the
  * trap implementation.
  */
 struct spinlock ticks_lock;
@@ -214,11 +214,11 @@ void handle_irq(struct trapframe* tf, u_int32* is_timer_irq)
     int_ctrl_regs* ip;
     ip = (int_ctrl_regs*) INT_REGS_BASE;
     while(ip->irq_pending[0] || ip->irq_pending[1] || ip->irq_basic_pending){
-        if(ip->irq_pending[0] & (1 << IRQ_TIMER3)) {
+        if(ip->irq_pending[0] & (1 << IRQ_TIMER_BIT)) {
             timer3intr();
             *is_timer_irq = 1;
 	    }
-        if(ip->irq_pending[0] & (1 << (u_int32) IRQ_MINIUART)) {
+        if(ip->irq_pending[0] & (1 << IRQ_MINIUART_BIT)) {
 		    miniuartintr();
         }
 	}
@@ -274,7 +274,7 @@ void handle_bad_trap(struct trapframe *tf)
  * trap is called by the trap vectors when the hardware fires a trap.
  *
  * @see exception.S
- * 
+ *
  * @param tf  - The trap frame generated when the trap was fired.
  */
 void trap(struct trapframe *tf)
@@ -292,19 +292,19 @@ void trap(struct trapframe *tf)
         default:
             handle_bad_trap(tf);
     }
-    // Force process exit if it has been killed and is in user space.
-    // (If it is still executing in the kernel, let it keep running
-    // until it gets to the regular system call return.)
+    /* Force process exit if it has been killed and is in user space.
+     * (If it is still executing in the kernel, let it keep running
+     * until it gets to the regular system call return.) */
     if(curr_proc){
         if(curr_proc->killed && (tf->spsr&0xF) == USER_MODE) {
             exit();
         }
-    // Force process to give up CPU on clock tick.
-    // If interrupts were on while locks held, would need to check nlock.
+    /* Force process to give up CPU on clock tick.
+     * If interrupts were on while locks held, would need to check nlock. */
         if(curr_proc->state == RUNNING && is_timer_irq) {
             yield();
         }
-    // Check if the process has been killed since we yielded
+    /* Check if the process has been killed since we yielded. */
         if(curr_proc->killed && (tf->spsr&0xF) == USER_MODE) {
             exit();
         }
