@@ -1,13 +1,29 @@
-/*****************************************************************
-*       exception.s
-*       by Zhiyi Huang, hzy@cs.otago.ac.nz
-*       University of Otago
-*
-********************************************************************/
+/**
+ * @file exception.S
+ *
+ * exception.S provides low-level trap handeling code,
+ * such as the interrupt vector, interrupt service routines,
+ * and assembly level interrup masking.
+ *
+ * @todo exception.S also contains some code which is not related
+ * to trap handling. Examples include context switching and
+ * reading the CPSR. Such code was apparenlty mereged into a
+ * single ASM file when xv6 as ported to ARM, and should
+ * probably be refactored back to seperated files.
+ *
+ * @author Zhiyi Huang, University of Otago, hzy@cs.otago.ac.nz
+ * (Adaption from MIT XV6.)
+ *
+ * @author H Paterson, University of Otago, patha454@student.otago.ac.nz
+ * (Documentation, styling, and refactoring.)
+ *
+ * @date 07/10/2018
+ */
 
 
 .align 4
 .section .text
+
 
 .global vectors
 vectors:
@@ -37,18 +53,20 @@ fiq_handler:
 	.word hang    /* FIQ */
 
 hang:
-        bl NotOkLoop;
+    bl NotOkLoop;
 	b hang
+
+
 do_svc:
 	push {lr}
-        mrs lr, spsr
-        push {lr}
-        mrs lr, cpsr
-        push {lr}
-        mrc p15, 0, lr, c6, c0, 2  /* read Instruction Fault Address Register (IFAR) */
-        push {lr}
-        mov lr, #0x40
-        push {lr}
+    mrs lr, spsr
+    push {lr}
+    mrs lr, cpsr
+    push {lr}
+    mrc p15, 0, lr, c6, c0, 2  /* read Instruction Fault Address Register (IFAR) */
+    push {lr}
+    mov lr, #0x40
+    push {lr}
 	STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
 	sub sp, sp, #60
 	mov r0, sp   /* save sp */
@@ -60,6 +78,7 @@ do_svc:
 	sub sp, sp, #4
 	mov r0, sp
 	bl trap
+
 
 .global trapret
 trapret:
@@ -73,19 +92,22 @@ trapret:
 	LDMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
 	add sp, sp, #72
 	pop {lr}
-        msr spsr, lr
+    msr spsr, lr
 	pop {lr}
 	movs pc, lr  /* subs pc,lr,#0 */
+
 
 do_und:
 	STMFD sp, {r0-r4}
 	mov r0, #0x01
 	b _switchtosvc
 
+
 do_pabt:
 	STMFD sp, {r0-r4}
 	mov r0, #0x02
 	b _switchtosvc
+
 
 do_dabt:
 	STMFD sp, {r0-r4}
@@ -96,6 +118,8 @@ do_irq:
 	STMFD sp, {r0-r4}
 	mov r0, #0x80
 	b _switchtosvc
+
+
 _switchtosvc:
 	mrs r1, spsr
 	sub r2, lr, #4
@@ -109,25 +133,22 @@ _switchtosvc:
 	push {r1}
 	mrs r1, cpsr
 	push {r1}
-        mrc p15, 0, r1, c6, c0, 2  /* read Instruction Fault Address Register (I
-FAR) */
-        push {r1}
-        push {r0}
+    mrc p15, 0, r1, c6, c0, 2  /* read Instruction Fault Address Register (IFAR) */
+    push {r1}
+    push {r0}
 	sub r1, r3, #20
 	LDMFD r1, {r0-r4}
 	STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
 	sub sp, sp, #60
-        mov r0, sp   /* save sp */
-        STMFD r0, {r13}^    /* save user mode sp */
-        mov r1, r1 /* three nops after STM with user mode banked registers */
-        mov r1, r1
-        mov r1, r1
-        mov sp, r0  /* restore sp */
-        sub sp, sp, #4
-        mov r0, sp
-
-	bl trap
-
+    mov r0, sp   /* save sp */
+    STMFD r0, {r13}^    /* save user mode sp */
+    mov r1, r1 /* three nops after STM with user mode banked registers */
+    mov r1, r1
+    mov r1, r1
+    mov sp, r0  /* restore sp */
+    sub sp, sp, #4
+    mov r0, sp
+    bl trap
 	mov r0, sp
 	add r0, #76
 	LDMIA r0, {r1}
@@ -136,12 +157,13 @@ FAR) */
 	cmp r2, #0
 	beq _backtouser
 	msr cpsr, r1
-        add sp, #4
+    add sp, #4
 	LDMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
 	add sp, sp, #56
 	pop {r14}
 	add sp, sp, #16
 	pop {pc}
+
 
 _backtouser:
 	mov r0, sp /* save sp in case it is changed to sp_usr after the following LDMFD instruction */
