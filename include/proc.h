@@ -3,6 +3,8 @@
 *       adapted from MIT xv6 by Zhiyi Huang, hzy@cs.otago.ac.nz
 *       University of Otago
 *
+*       Changes to this file should be duplicated in include/proc.h
+*
 ********************************************************************/
 
 

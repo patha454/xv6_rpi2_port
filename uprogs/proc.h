@@ -1,3 +1,5 @@
+// This should be a duplicate of include/proc.h
+
 // Segments in proc->gdt.
 #define NSEGS     7
 
