@@ -217,12 +217,49 @@ sti:
 	bx lr                   @ Return.
 
 
-
+/**
+ * swtch ("context Switch") switches to a new process context.
+ *
+ * swtch saves the current context to the top of the current process'
+ * stack, and saves the location of the old stack to a pointer passed
+ * in as a parameter.
+ *
+ * The hardware stack pointer is then set to the new context's stack
+ * (also passed as a pointer,) and its context is poped into the
+ * current registers from the top of its stack.
+ *
+ * @see struct context in proc.h for the layout of the context on the stack.
+ *
+ * @param r0 - Where to store the old context's stack pointer.
+ * @param r1 - The new context's stack pointer.
+ */
 .global swtch
 swtch:
-	push {lr}  /* save the return address */
-	push {lr}
-	/* save old callee-save registers */
+    /* These two 'push {lr}'s can be confusing, because the first
+     * 'push {lr]' saves into what the struct context calls the 'pc.'
+     *
+     * This is not a typo. The first variable we push should be the
+     * program counter (see struct context and the matched
+     * pop instructions later in 'swtch'.) However, when this push
+     * is executed, the PC points to that push instruction - so instead,
+     * we save the link register (where swtch should return to) into the
+     * 'pc' variable on the context.
+     *
+     * When we eventually switch back to the original context (with
+     * another call to 'swtch', the final 'pop {pc}' loads the address
+     * the original switch was expected to return to (original LR) and not
+     * the first 'push {lr}' in 'swtch' - The latter would be a bug, where
+     * rubbish values from the stack would be loaded into the registers
+     * (including SP and LR) after a context switch, causing undefined
+     * behaviour.
+     */
+	push {lr}               @ Save where the old context should resume from.
+	push {lr}               @ ...Which is also the old context LR. Save this.
+
+	/* Save the old context's callee-save registers. In ARMv6, r0-r3 are
+	 * used to saved by the caller then used to pass arguments. r13-15 are
+	 * the SP, LR and PC which are handeled diffrently.
+	 */
 	push {r12}
 	push {r11}
 	push {r10}
@@ -233,11 +270,11 @@ swtch:
 	push {r5}
 	push {r4}
 
-	/* switch stacks */
-	str sp, [r0]
-	mov sp, r1
+	/* Switch Stacks. */
+	str sp, [r0]            @ Save the old context's stack pointer.
+	mov sp, r1              @ Set the stack to the new context's SP.
 
-	/* load new callee-save registers */
+	/* Load the new context's callee-save registers. */
 	pop {r4}
 	pop {r5}
 	pop {r6}
@@ -248,7 +285,6 @@ swtch:
 	pop {r11}
 	pop {r12}
 
-	/* return to previously saved pc */
-	pop {lr}
-	pop {pc}
-
+	/* Return to previously saved PC. */
+	pop {lr}                @ Pop the link register.
+	pop {pc}                @ Begin executing the new context
