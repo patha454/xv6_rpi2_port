@@ -160,43 +160,63 @@ _backtouser:
 
 
 /**
-* set_mode_sp is used set the stack pointer for a given CPU mode.
-*
-* @param r0 - The address to use as the new stack pointer.
-* @param r1 - The CPU mode the stack pointer is for, given as a
-*             CPSR mode bit pattern.
-*/
+ * set_mode_sp is used set the stack pointer for a given CPU mode.
+ *
+ * @param r0 - The address to use as the new stack pointer.
+ * @param r1 - The CPU mode the stack pointer is for, given as a
+ *             CPSR mode bit pattern.
+ */
 .global set_mode_sp
 set_mode_sp:
-	mrs r2, cpsr        @ Save the old mode and state to the working registers.
-	msr cpsr_c,r1       @ Set the new CPU mode, etc, passed in as an argument.
-	mov sp, r0          @ Set the new stack pointer, passed in as an argument.
-	mrs r0, cpsr        @ Copy the new CPSR to the working registers.
-	orr r0, #0x00000080 @ Disable IRQ interrupts.
-	orr r0, #0x00000040 @ Disable FIQ interrupts.
-	msr cpsr, r0        @ Execute the IRQ and FIQ disable for the given mode.
-	msr cpsr_c, r2      @ Return to the mode and state to original.
-	bx lr               @ Return.
+	mrs r2, cpsr            @ Save the old mode and state to the working registers.
+	msr cpsr_c,r1           @ Set the new CPU mode, etc, passed in as an argument.
+	mov sp, r0              @ Set the new stack pointer, passed in as an argument.
+	mrs r0, cpsr            @ Copy the new CPSR to the working registers.
+	orr r0, #0x00000080     @ Disable IRQ interrupts.
+	orr r0, #0x00000040     @ Disable FIQ interrupts.
+	msr cpsr, r0            @ Execute the IRQ and FIQ disable for the given mode.
+	msr cpsr_c, r2          @ Return to the mode and state to original.
+	bx lr                   @ Return.
 
 
+/**
+ * readcpsr returns the Current Program Status Register.
+ */
 .global readcpsr
 readcpsr:
-	mrs r0, cpsr
-	bx lr
+	mrs r0, cpsr            @ Load the CPSR into the return register.
+	bx lr                   @ Return.
 
+
+/**
+ * cli ("Clear Interrupts") disables IRQ interrupts.
+ *
+ * THis will not disable FIQ interrupts.
+ */
 .global cli
 cli:
-        mrs r0, cpsr
-        orr r0, #0x00000080 /* PSR_DISABLE_IRQ */
-        msr cpsr, r0
-        bx lr
+    mrs r0, cpsr            @ Load the CPSR into the working registers.
+    orr r0, #0x00000080     @ Set the mask IRQ bit.
+    msr cpsr, r0            @ Set the (IRQ masked) CPSR into the coprocessor.
+    bx lr                   @ Return.
 
+
+/**
+ * sti ("Set Interrupts") re-enables IRQ interrupts.
+ * sti should be used after a call to 'cli' and not
+ * to enable IRQs disabled through the interrpupt
+ * control registers.
+ *
+ * This will not enable FIQ interrupts if they are disabled.
+ */
 .global sti
 sti:
-	mrs r0, cpsr
-	bic r0, r0, #0x00000080 /* PSR_DISABLE_IRQ */
-	msr cpsr, r0
-	bx lr
+	mrs r0, cpsr            @ Load the CPSR into the working registers.
+	bic r0, r0, #0x00000080 @ Clear the IRQ mask bit.
+	msr cpsr, r0            @ Load the (IRQ enabled) CPSR into the coprocessor.
+	bx lr                   @ Return.
+
+
 
 .global swtch
 swtch:
