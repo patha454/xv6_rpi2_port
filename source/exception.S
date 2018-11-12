@@ -25,33 +25,72 @@
 .section .text
 
 
+/**
+ * vectors is the interrupt vector table for the OS.
+ *
+ * The trap vector is hard coded into the text section. The trap
+ * vector is copied into the HVECTORS, where the CPU expects to
+ * find it, during initialisation.
+ *
+ * @see tvinit() in trap.c
+ *
+ * When a trap is fired, the CPU will branch to one of the eight
+ * entries in the interrupt vector. Each of these entries
+ * will begin executing the relevant interrupt service routine.
+ */
 .global vectors
 vectors:
-	ldr pc, reset_handler 
-	ldr pc, undefintr_handler
-	ldr pc, swi_handler
-	ldr pc, prefetch_handler
-	ldr pc, data_handler
-	ldr pc, unused_handler
-	ldr pc, irq_handler
-	ldr pc, fiq_handler
+	ldr pc, reset_handler       @ Processor reset trap.
+	ldr pc, undefintr_handler   @ Undefined instruction trap.
+	ldr pc, swi_handler         @ Software interrupt.
+	ldr pc, prefetch_handler    @ Prefetch abort trap (Instruction address invalid.)
+	ldr pc, data_handler        @ Data abort trap (Data address invalid.)
+	ldr pc, unused_handler      @ Reserved by ARM. (No meaning in current architecture.)
+	ldr pc, irq_handler         @ Interrupt request.
+	ldr pc, fiq_handler         @ Fast interrupt request.
+
+
+/*
+ * Processor reset handler function pointer.
+ * This is not implimented and will crash to an infinite loop.
+ *
+ * More research is requried to determine why.
+ */
 reset_handler:
 	.word hang    /* reset, in svc mode already */
-undefintr_handler:
-	.word do_und      /* undefined instruction */
-swi_handler:
-	.word do_svc    /* SWI & SVC */
-prefetch_handler:
-	.word do_pabt      /* prefetch abort */
-data_handler:
-	.word do_dabt     /* data abort */
-unused_handler:
-	.word hang      /* reserved */
-irq_handler:
-	.word do_irq    /* IRQ */
-fiq_handler:
-	.word hang    /* FIQ */
 
+/* Undefined instruction handler function pointer. */
+undefintr_handler:
+	.word do_und
+
+/* Software interrupt (SWI) and service call) (SCI) handler funciton pointer. */
+swi_handler:
+	.word do_svc
+
+/* Instruction prefetch abort handler funcion pointer. */
+prefetch_handler:
+	.word do_pabt
+
+/* Data handler abort handler function pointer. */
+data_handler:
+	.word do_dabt
+
+/* Handler reserved by ARM. This should never be called. */
+unused_handler:
+	.word hang
+
+/* Interrupt request handler function pointer. */
+irq_handler:
+	.word do_irq
+
+/* Fast interrupt request handler function pointer. */
+fiq_handler:
+	.word hang
+
+
+/**
+ * Hang provides a facility to enter an infinite loop in error cases.
+ */
 hang:
     bl NotOkLoop;
 	b hang
@@ -213,7 +252,7 @@ readcpsr:
 /**
  * cli ("Clear Interrupts") disables IRQ interrupts.
  *
- * THis will not disable FIQ interrupts.
+ * This will not disable FIQ interrupts.
  */
 .global cli
 cli:
