@@ -95,28 +95,38 @@ hang:
     bl NotOkLoop;
 	b hang
 
-
+/**
+ * do_svc (Do Supervisor Call) prepares initiates a
+ * system call.
+ *
+ * do_svc creates the trap frame by pushing values onto the the stack,
+ * and manually adjusting the stack pointer when necessary. Finally,
+ * do_svc calls trap in trap.c to execute the system call.
+ *
+ * @see trap() in trap.c
+ */
 do_svc:
-	push {lr}
-    mrs lr, spsr
-    push {lr}
-    mrs lr, cpsr
-    push {lr}
-    mrc p15, 0, lr, c6, c0, 2  /* read Instruction Fault Address Register (IFAR) */
-    push {lr}
-    mov lr, #0x40
-    push {lr}
+	push {lr}                   @ Push the link register onto the trap frame.
+    mrs lr, spsr                @ Read the SPSR into the CPU.
+    push {lr}                   @ Push the SPSR onto the trap frame.
+    mrs lr, cpsr                @ Read the CPSR into the CPU.
+    push {lr}                   @ Push the CPSR onto the onto the trap frame.
+    mrc p15, 0, lr, c6, c0, 2   @ Read Instruction Fault Address Register.
+    push {lr}                   @ Push the IFAR onto the trap frame.
+    mov lr, #0x40               @ Load the system call trap code.
+    push {lr}                   @ Push the trap code onto the trap frame.
+    /* Push the general purpose registers onto the trap frame. */
 	STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
-	sub sp, sp, #60
-	mov r0, sp   /* save sp */
-	STMFD r0, {r13}^   /* save user mode sp */
-	mov r1, r1 /* three nops after STM with user mode banked registers */
-	mov r1, r1
-	mov r1, r1
-	mov sp, r0  /* restore sp */
-	sub sp, sp, #4
-	mov r0, sp
-	bl trap
+	sub sp, sp, #60             @ Decrement SP through 15 general purporse registers.
+	mov r0, sp                  @ Save a pointer to the trap frame.
+    STMFD r0, {r13}^            @ Save the user mode stack pointer.
+    mov r1, r1                  @ Three no-ops after saving user mode
+	mov r1, r1                  @ ... banked registers. More research
+	mov r1, r1                  @ is needed to find out  why.
+	mov sp, r0                  @ Restore the SP (which didn't it change?)
+	sub sp, sp, #4              @ Decrement SP through user SP on the trap frame.
+	mov r0, sp                  @ Set the trap frame as an argument.
+	bl trap                     @ Call trap in exception.c
 
 
 .global trapret
