@@ -100,7 +100,8 @@ hang:
  * system call.
  *
  * do_svc is used for software interrupts (SWI) only. Other traps
- * and interrupts are handled diffrently by switchtosvc.
+ * and interrupts are handled diffrently by switchtosvc, because
+ * the CPU must switch from the trap mode to SVC mode.
  *
  * do_svc creates the trap frame by pushing values onto the the stack,
  * and manually adjusting the stack pointer when necessary. Finally,
@@ -201,49 +202,71 @@ do_irq:
     b _switchtosvc              @ Perform a system call.
 
 
+/**
+ * _switchtosvc handles hardware traps by refering them to the OS
+ * system call facility.
+ *
+ * _switchtosvc switches to SVC mode, sets up the trap frame,
+ * and calls calls the OS trap handler with a trap code describing
+ * the the trap event.
+ *
+ * _switchtosvc expects the callee-saved registers (r0-r4) to be
+ * saved by the caller on the top of the stack. This is important
+ * because _switchtosvc must ultimatly be able to find these
+ * registers to save them in the trap frame.
+ *
+ * @see trap() in trap.c
+ *
+ * @param r0 - The trap code for the trap to handle.
+ */
 _switchtosvc:
-    mrs r1, spsr
-    sub r2, lr, #4
-    mov r3, sp
-    mrs lr, cpsr
-    bic lr, #0x0000001F /* PSR_MASK */
-    orr lr, #0x00000080 /* PSR_DISABLE_IRQ */
-    orr lr, #0x00000013 /* PSR_MODE_SVC */
-    msr cpsr, lr /* switch to svc */
-    push {r2}
-    push {r1}
-    mrs r1, cpsr
-    push {r1}
-    mrc p15, 0, r1, c6, c0, 2  /* read Instruction Fault Address Register (IFAR) */
-    push {r1}
-    push {r0}
-    sub r1, r3, #20
-    LDMFD r1, {r0-r4}
+    mrs r1, spsr                @ Save the SPSR from the trap cause instruction.
+    sub r2, lr, #4              @ Save the user mode addres to return to.
+    mov r3, sp                  @ Save the stack location of callee-saved registers.
+    mrs lr, cpsr                @ Move the CPSR to the working registers.
+    bic lr, #0x0000001F         @ Mask Thumb and CPU mode bits in the CPSR.
+    orr lr, #0x00000080         @ Disable IRQ interrupts.
+    orr lr, #0x00000013         @ Set mode bits to SVC mode.
+    msr cpsr, lr                @ Switch to SVC, disable Thumb and IRQ.
+    push {r2}                   @ Save the return address to trap frame.
+    push {r1}                   @ Save the SPSR to the trap frame.
+    mrs r1, cpsr                @ Load the CPSR to the working registers.
+    push {r1}                   @ Save the SPSR to the trap frame.
+    mrc p15, 0, r1, c6, c0, 2   @ Read Instruction Fault Address Register (IFAR).
+    push {r1}                   @ Save the IFAR to the trap frame.
+    push {r0}                   @ Save the trap number to the trap frame.
+    sub r1, r3, #20             @ Allocate stack space for callee-saved registers.
+    LDMFD r1, {r0-r4}           @ Load the callee-saved registers.
+    /* Save the general purpose registers to the trap frame. */
     STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
-    sub sp, sp, #60
-    mov r0, sp   /* save sp */
-    STMFD r0, {r13}^    /* save user mode sp */
-    mov r1, r1 /* three nops after STM with user mode banked registers */
-    mov r1, r1
-    mov r1, r1
-    mov sp, r0  /* restore sp */
-    sub sp, sp, #4
-    mov r0, sp
-    bl trap
-    mov r0, sp
-    add r0, #76
-    LDMIA r0, {r1}
-    mov r2, r1
-    and r2, #0xf
-    cmp r2, #0
-    beq _backtouser
-    msr cpsr, r1
-    add sp, #4
+    sub sp, sp, #60             @ Decrement SP past saved GP registers.
+    mov r0, sp                  @ Point r0 to the top of the trap frame.
+    STMFD r0, {r13}^            @ Save user mode SP to the trap frame.
+    mov r1, r1                  @ Three NOPs after STM with user mode banked
+    mov r1, r1                  @ ...registers. More research is required to
+    mov r1, r1                  @ ...determine why. Perhaps pipeline issues?
+    mov sp, r0                  @ Restore the stack pointer.
+    sub sp, sp, #4              @ Move SP past the user SP on the trap frame.
+    mov r0, sp                  @ Set the trap frame pointer as an argument.
+    bl trap                     @ Call trap handler.
+    mov r0, sp                  @ Copy SP to the working registers.
+    add r0, #76                 @ Point r0 to the SPSR on the trap frame
+    LDMIA r0, {r1}              @ Load SPSR into r1
+    mov r2, r1                  @ Copy SPSR into r2
+    and r2, #0xf                @ Get CPU mode bits
+    cmp r2, #0                  @ Test if CPU was in user mode.
+    beq _backtouser             @ Return to user if trap was fired from userspace.
+    /* Otherwise, this trap was generated while responding to another trap.
+     * We will return the CPU to the state it was in before the trap,
+     * and continue executing that trap handler. */
+    msr cpsr, r1                @ Set CPU state to previous mode-state.
+    add sp, #4                  @ Move SP to GP registers in the trap frame.
+    /* Restore general purpose registers from the trap frame. */
     LDMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
-    add sp, sp, #56
-    pop {r14}
-    add sp, sp, #16
-    pop {pc}
+    add sp, sp, #56             @ Move the SP past the GP regs on the trap frame.
+    pop {r14}                   @ Restore the link register from the trap frame.
+    add sp, sp, #16             @ Move the SP to the PC on the trap frame.
+    pop {pc}                    @ Continue executing from the trap frame PC.
 
 
 _backtouser:
