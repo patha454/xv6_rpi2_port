@@ -269,20 +269,31 @@ _switchtosvc:
     pop {pc}                    @ Continue executing from the trap frame PC.
 
 
+/**
+ * _backtouser returns to user space after a system call.
+ *
+ * _backtouser restores the general purpose registers, stack pointer
+ * CPU mode/state, LR, before jumping the PC to where the user space
+ * execution should continue from.
+ *
+ * _backtouser differs from the return to other modes (done inline
+ * with _switchtosvc) by restoring the user mode SP from the trap frame.
+ */
 _backtouser:
-    mov r0, sp /* save sp in case it is changed to sp_usr after the following LDMFD instruction */
-    LDMFD r0, {r13}^ /* restore user mode sp */
-    mov r1, r1  /* three nops after LDMFD */
+    mov r0, sp                  @ Save SP in case LDMFD changes it.
+    LDMFD r0, {r13}^            @ Restore user mode SP from the trap frame.
+    mov r1, r1                  @ Three NOPs after LDMFD with user regs.
     mov r1, r1
     mov r1, r1
-    mov sp, r0  /* restore sp */
-    add sp, sp, #4
+    mov sp, r0                  @ Restore privileged mode SP.
+    add sp, sp, #4              @ Decrement the SP past the poped user SP.
+    /* Restore general purpose registers from the trap frame. */
     LDMIA sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
-    add sp, sp, #72
-    pop {lr}
-    msr spsr, lr
-    pop {lr}
-    movs pc, lr  /* subs pc,lr,#0 */
+    add sp, sp, #72             @ Decrement the SP to the trap frame SPSR.
+    pop {lr}                    @ Read the user mode SPSR from the trap frame.
+    msr spsr, lr                @ Restore the user mode SPSR
+    pop {lr}                    @ Load the trap frame PC.
+    movs pc, lr                 @ Continue executing from the trap frame PC.
 
 
 /**
@@ -294,14 +305,14 @@ _backtouser:
  */
 .global set_mode_sp
 set_mode_sp:
-    mrs r2, cpsr            @ Save the old mode and state to the working registers.
+    mrs r2, cpsr            @ Read the old mode and state to the working registers.
     msr cpsr_c,r1           @ Set the new CPU mode, etc, passed in as an argument.
     mov sp, r0              @ Set the new stack pointer, passed in as an argument.
     mrs r0, cpsr            @ Copy the new CPSR to the working registers.
     orr r0, #0x00000080     @ Disable IRQ interrupts.
     orr r0, #0x00000040     @ Disable FIQ interrupts.
     msr cpsr, r0            @ Execute the IRQ and FIQ disable for the given mode.
-    msr cpsr_c, r2          @ Return to the mode and state to original.
+    msr cpsr_c, r2          @ Return to the original CPU mode.
     bx lr                   @ Return.
 
 
