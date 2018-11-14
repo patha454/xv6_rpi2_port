@@ -256,7 +256,7 @@ inline void handle_syscall(struct trapframe* tf)
  */
 void handle_bad_trap(struct trapframe *tf)
 {
-    if(curr_proc == 0 || (tf->spsr & 0xF) != USER_MODE){
+    if(curr_proc == 0 || (tf->spsr & 0xF) != PSR_USER_MODE){
         // In kernel, it must be our mistake.
         cprintf("Unexpected trap from kernel space.\n");
         print_trap(tf);
@@ -298,7 +298,7 @@ void trap(struct trapframe *tf)
      * (If it is still executing in the kernel, let it keep running
      * until it gets to the regular system call return.) */
     if(curr_proc){
-        if(curr_proc->killed && (tf->spsr&0xF) == USER_MODE) {
+        if(curr_proc->killed && (tf->spsr&0xF) == PSR_USER_MODE) {
             exit();
         }
     /* Force process to give up CPU on clock tick.
@@ -307,7 +307,7 @@ void trap(struct trapframe *tf)
             yield();
         }
     /* Check if the process has been killed since we yielded. */
-        if(curr_proc->killed && (tf->spsr&0xF) == USER_MODE) {
+        if(curr_proc->killed && (tf->spsr&0xF) == PSR_USER_MODE) {
             exit();
         }
     }
