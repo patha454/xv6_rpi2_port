@@ -40,14 +40,14 @@
  */
 .global vectors
 vectors:
-	ldr pc, reset_handler       @ Processor reset trap.
-	ldr pc, undefintr_handler   @ Undefined instruction trap.
-	ldr pc, swi_handler         @ Software interrupt.
-	ldr pc, prefetch_handler    @ Prefetch abort trap (Instruction address invalid.)
-	ldr pc, data_handler        @ Data abort trap (Data address invalid.)
-	ldr pc, unused_handler      @ Reserved by ARM. (No meaning in current architecture.)
-	ldr pc, irq_handler         @ Interrupt request.
-	ldr pc, fiq_handler         @ Fast interrupt request.
+    ldr pc, reset_handler       @ Processor reset trap.
+    ldr pc, undefintr_handler   @ Undefined instruction trap.
+    ldr pc, swi_handler         @ Software interrupt.
+    ldr pc, prefetch_handler    @ Prefetch abort trap (Instruction address invalid.)
+    ldr pc, data_handler        @ Data abort trap (Data address invalid.)
+    ldr pc, unused_handler      @ Reserved by ARM. (No meaning in current architecture.)
+    ldr pc, irq_handler         @ Interrupt request.
+    ldr pc, fiq_handler         @ Fast interrupt request.
 
 
 /*
@@ -57,35 +57,35 @@ vectors:
  * More research is requried to determine why.
  */
 reset_handler:
-	.word hang    /* reset, in svc mode already */
+    .word hang    /* reset, in svc mode already */
 
 /* Undefined instruction handler function pointer. */
 undefintr_handler:
-	.word do_und
+    .word do_und
 
 /* Software interrupt (SWI) and service call) (SCI) handler funciton pointer. */
 swi_handler:
-	.word do_svc
+    .word do_svc
 
 /* Instruction prefetch abort handler funcion pointer. */
 prefetch_handler:
-	.word do_pabt
+    .word do_pabt
 
 /* Data handler abort handler function pointer. */
 data_handler:
-	.word do_dabt
+    .word do_dabt
 
 /* Handler reserved by ARM. This should never be called. */
 unused_handler:
-	.word hang
+    .word hang
 
 /* Interrupt request handler function pointer. */
 irq_handler:
-	.word do_irq
+    .word do_irq
 
 /* Fast interrupt request handler function pointer. */
 fiq_handler:
-	.word hang
+    .word hang
 
 
 /**
@@ -93,7 +93,7 @@ fiq_handler:
  */
 hang:
     bl NotOkLoop;
-	b hang
+    b hang
 
 /**
  * do_svc (Do Supervisor Call) prepares initiates a
@@ -106,7 +106,7 @@ hang:
  * @see trap() in trap.c
  */
 do_svc:
-	push {lr}                   @ Push the link register onto the trap frame.
+    push {lr}                   @ Push the link register onto the trap frame.
     mrs lr, spsr                @ Read the SPSR into the CPU.
     push {lr}                   @ Push the SPSR onto the trap frame.
     mrs lr, cpsr                @ Read the CPSR into the CPU.
@@ -116,79 +116,83 @@ do_svc:
     mov lr, #0x40               @ Load the system call trap code.
     push {lr}                   @ Push the trap code onto the trap frame.
     /* Push the general purpose registers onto the trap frame. */
-	STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
-	sub sp, sp, #60             @ Decrement SP through 15 general purporse registers.
-	mov r0, sp                  @ Save a pointer to the trap frame.
-    STMFD r0, {r13}^            @ Save the user mode stack pointer.
+    STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
+    sub sp, sp, #60             @ Decrement SP through 15 general purporse registers.
+    mov r0, sp                  @ Save a pointer to the trap frame.
+    STMFD r0, {r13}^            @ Load the user mode stack pointer.
     mov r1, r1                  @ Three no-ops after saving user mode
-	mov r1, r1                  @ ... banked registers. More research
-	mov r1, r1                  @ is needed to find out  why.
-	mov sp, r0                  @ Restore the SP (which didn't it change?)
-	sub sp, sp, #4              @ Decrement SP through user SP on the trap frame.
-	mov r0, sp                  @ Set the trap frame as an argument.
-	bl trap                     @ Call trap in exception.c
+    mov r1, r1                  @ ...banked registers. More research
+    mov r1, r1                  @ ...is needed to find out  why.
+    mov sp, r0                  @ Restore the SP (which didn't it change?)
+    sub sp, sp, #4              @ Decrement SP through user SP on the trap frame.
+    mov r0, sp                  @ Set the trap frame as an argument.
+    bl trap                     @ Call trap in exception.c
 
 
+/**
+ * trapret return from a trap by restoring registers from the trap frame.
+ */
 .global trapret
 trapret:
-	mov r0, sp /* save sp in case it is changed to sp_usr after the following LDMFD instruction */
-	LDMFD r0, {r13}^ /* restore user mode sp */
-	mov r1, r1  /* three nops after LDMFD */
-	mov r1, r1
-	mov r1, r1
-	mov sp, r0  /* restore sp */
-	add sp, sp, #4
-	LDMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
-	add sp, sp, #72
-	pop {lr}
-    msr spsr, lr
-	pop {lr}
-	movs pc, lr  /* subs pc,lr,#0 */
+    mov r0, sp                  @ Save the SVC mode stack pointer.
+    LDMFD r0, {r13}^            @ Read user SP (from trap frame) into user mode SP.
+    mov r1, r1                  @ Three NOPs after LDMFD.
+    mov r1, r1                  @ More research is required into why.
+    mov r1, r1                  @ Perhaps to avoid pipelining problems...
+    mov sp, r0                  @ Restore the SVC mode stack pointer.
+    add sp, sp, #4              @ Decrement the stack past the (popped) user SP.
+    /* Pop working registers from the trap frame. */
+    LDMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
+    add sp, sp, #72             @ Move the SP to the trap frame SPSR
+    pop {lr}                    @ Load the pre-trap SPSR from the trap frame,
+    msr spsr, lr                @ Restore the SPSR.
+    pop {lr}                    @ Load the trap return address from the trap frame,
+    movs pc, lr                 @ Resume executing from pre-trap PC.
 
 
 do_und:
-	STMFD sp, {r0-r4}
-	mov r0, #0x01
-	b _switchtosvc
+    STMFD sp, {r0-r4}
+    mov r0, #0x01
+    b _switchtosvc
 
 
 do_pabt:
-	STMFD sp, {r0-r4}
-	mov r0, #0x02
-	b _switchtosvc
+    STMFD sp, {r0-r4}
+    mov r0, #0x02
+    b _switchtosvc
 
 
 do_dabt:
-	STMFD sp, {r0-r4}
-	mov r0, #0x04
-	b _switchtosvc
+    STMFD sp, {r0-r4}
+    mov r0, #0x04
+    b _switchtosvc
 
 do_irq:
-	STMFD sp, {r0-r4}
-	mov r0, #0x80
-	b _switchtosvc
+    STMFD sp, {r0-r4}
+    mov r0, #0x80
+    b _switchtosvc
 
 
 _switchtosvc:
-	mrs r1, spsr
-	sub r2, lr, #4
-	mov r3, sp
-	mrs lr, cpsr
-	bic lr, #0x0000001F /* PSR_MASK */
-	orr lr, #0x00000080 /* PSR_DISABLE_IRQ */
-	orr lr, #0x00000013 /* PSR_MODE_SVC */
-	msr cpsr, lr /* switch to svc */
-	push {r2}
-	push {r1}
-	mrs r1, cpsr
-	push {r1}
+    mrs r1, spsr
+    sub r2, lr, #4
+    mov r3, sp
+    mrs lr, cpsr
+    bic lr, #0x0000001F /* PSR_MASK */
+    orr lr, #0x00000080 /* PSR_DISABLE_IRQ */
+    orr lr, #0x00000013 /* PSR_MODE_SVC */
+    msr cpsr, lr /* switch to svc */
+    push {r2}
+    push {r1}
+    mrs r1, cpsr
+    push {r1}
     mrc p15, 0, r1, c6, c0, 2  /* read Instruction Fault Address Register (IFAR) */
     push {r1}
     push {r0}
-	sub r1, r3, #20
-	LDMFD r1, {r0-r4}
-	STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
-	sub sp, sp, #60
+    sub r1, r3, #20
+    LDMFD r1, {r0-r4}
+    STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
+    sub sp, sp, #60
     mov r0, sp   /* save sp */
     STMFD r0, {r13}^    /* save user mode sp */
     mov r1, r1 /* three nops after STM with user mode banked registers */
@@ -198,36 +202,36 @@ _switchtosvc:
     sub sp, sp, #4
     mov r0, sp
     bl trap
-	mov r0, sp
-	add r0, #76
-	LDMIA r0, {r1}
-	mov r2, r1
-	and r2, #0xf
-	cmp r2, #0
-	beq _backtouser
-	msr cpsr, r1
+    mov r0, sp
+    add r0, #76
+    LDMIA r0, {r1}
+    mov r2, r1
+    and r2, #0xf
+    cmp r2, #0
+    beq _backtouser
+    msr cpsr, r1
     add sp, #4
-	LDMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
-	add sp, sp, #56
-	pop {r14}
-	add sp, sp, #16
-	pop {pc}
+    LDMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
+    add sp, sp, #56
+    pop {r14}
+    add sp, sp, #16
+    pop {pc}
 
 
 _backtouser:
-	mov r0, sp /* save sp in case it is changed to sp_usr after the following LDMFD instruction */
-	LDMFD r0, {r13}^ /* restore user mode sp */
-	mov r1, r1  /* three nops after LDMFD */
-	mov r1, r1
-	mov r1, r1
-	mov sp, r0  /* restore sp */
-	add sp, sp, #4
-	LDMIA sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
-	add sp, sp, #72
-	pop {lr}
-	msr spsr, lr
-	pop {lr}
-	movs pc, lr  /* subs pc,lr,#0 */
+    mov r0, sp /* save sp in case it is changed to sp_usr after the following LDMFD instruction */
+    LDMFD r0, {r13}^ /* restore user mode sp */
+    mov r1, r1  /* three nops after LDMFD */
+    mov r1, r1
+    mov r1, r1
+    mov sp, r0  /* restore sp */
+    add sp, sp, #4
+    LDMIA sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12}
+    add sp, sp, #72
+    pop {lr}
+    msr spsr, lr
+    pop {lr}
+    movs pc, lr  /* subs pc,lr,#0 */
 
 
 /**
@@ -239,15 +243,15 @@ _backtouser:
  */
 .global set_mode_sp
 set_mode_sp:
-	mrs r2, cpsr            @ Save the old mode and state to the working registers.
-	msr cpsr_c,r1           @ Set the new CPU mode, etc, passed in as an argument.
-	mov sp, r0              @ Set the new stack pointer, passed in as an argument.
-	mrs r0, cpsr            @ Copy the new CPSR to the working registers.
-	orr r0, #0x00000080     @ Disable IRQ interrupts.
-	orr r0, #0x00000040     @ Disable FIQ interrupts.
-	msr cpsr, r0            @ Execute the IRQ and FIQ disable for the given mode.
-	msr cpsr_c, r2          @ Return to the mode and state to original.
-	bx lr                   @ Return.
+    mrs r2, cpsr            @ Save the old mode and state to the working registers.
+    msr cpsr_c,r1           @ Set the new CPU mode, etc, passed in as an argument.
+    mov sp, r0              @ Set the new stack pointer, passed in as an argument.
+    mrs r0, cpsr            @ Copy the new CPSR to the working registers.
+    orr r0, #0x00000080     @ Disable IRQ interrupts.
+    orr r0, #0x00000040     @ Disable FIQ interrupts.
+    msr cpsr, r0            @ Execute the IRQ and FIQ disable for the given mode.
+    msr cpsr_c, r2          @ Return to the mode and state to original.
+    bx lr                   @ Return.
 
 
 /**
@@ -255,8 +259,8 @@ set_mode_sp:
  */
 .global readcpsr
 readcpsr:
-	mrs r0, cpsr            @ Load the CPSR into the return register.
-	bx lr                   @ Return.
+    mrs r0, cpsr            @ Load the CPSR into the return register.
+    bx lr                   @ Return.
 
 
 /**
@@ -282,10 +286,10 @@ cli:
  */
 .global sti
 sti:
-	mrs r0, cpsr            @ Load the CPSR into the working registers.
-	bic r0, r0, #0x00000080 @ Clear the IRQ mask bit.
-	msr cpsr, r0            @ Load the (IRQ enabled) CPSR into the coprocessor.
-	bx lr                   @ Return.
+    mrs r0, cpsr            @ Load the CPSR into the working registers.
+    bic r0, r0, #0x00000080 @ Clear the IRQ mask bit.
+    msr cpsr, r0            @ Load the (IRQ enabled) CPSR into the coprocessor.
+    bx lr                   @ Return.
 
 
 /**
@@ -324,38 +328,34 @@ swtch:
      * (including SP and LR) after a context switch, causing undefined
      * behaviour.
      */
-	push {lr}               @ Save where the old context should resume from.
-	push {lr}               @ ...Which is also the old context LR. Save this.
-
-	/* Save the old context's callee-save registers. In ARMv6, r0-r3 are
-	 * used to saved by the caller then used to pass arguments. r13-15 are
-	 * the SP, LR and PC which are handeled diffrently.
-	 */
-	push {r12}
-	push {r11}
-	push {r10}
-	push {r9}
-	push {r8}
-	push {r7}
-	push {r6}
-	push {r5}
-	push {r4}
-
-	/* Switch Stacks. */
-	str sp, [r0]            @ Save the old context's stack pointer.
-	mov sp, r1              @ Set the stack to the new context's SP.
-
+    push {lr}               @ Save where the old context should resume from.
+    push {lr}               @ ...Which is also the old context LR. Save this.
+    /* Save the old context's callee-save registers. In ARMv6, r0-r3 are
+     * used to saved by the caller then used to pass arguments. r13-15 are
+     * the SP, LR and PC which are handeled diffrently.
+     */
+    push {r12}
+    push {r11}
+    push {r10}
+    push {r9}
+    push {r8}
+    push {r7}
+    push {r6}
+    push {r5}
+    push {r4}
+    /* Switch Stacks. */
+    str sp, [r0]            @ Save the old context's stack pointer.
+    mov sp, r1              @ Set the stack to the new context's SP.
 	/* Load the new context's callee-save registers. */
-	pop {r4}
-	pop {r5}
-	pop {r6}
-	pop {r7}
-	pop {r8}
-	pop {r9}
-	pop {r10}
-	pop {r11}
-	pop {r12}
-
+    pop {r4}
+    pop {r5}
+    pop {r6}
+    pop {r7}
+    pop {r8}
+    pop {r9}
+    pop {r10}
+    pop {r11}
+    pop {r12}
 	/* Return to previously saved PC. */
-	pop {lr}                @ Pop the link register.
-	pop {pc}                @ Begin executing the new context
+    pop {lr}                @ Pop the link register.
+    pop {pc}                @ Begin executing the new context
