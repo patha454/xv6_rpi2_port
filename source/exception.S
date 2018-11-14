@@ -215,7 +215,7 @@ do_irq:
  * because _switchtosvc must ultimatly be able to find these
  * registers to save them in the trap frame.
  *
- * @see trap() in trap.c
+ * @see trap() in trap.c.
  *
  * @param r0 - The trap code for the trap to handle.
  */
