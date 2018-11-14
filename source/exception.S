@@ -17,7 +17,7 @@
  * @author H Paterson, University of Otago, patha454@student.otago.ac.nz
  * (Documentation, styling, and refactoring.)
  *
- * @date 07/10/2018
+ * @date 14/10/2018
  */
 
 
@@ -63,7 +63,7 @@ reset_handler:
 undefintr_handler:
     .word do_und
 
-/* Software interrupt (SWI) and service call) (SCI) handler funciton pointer. */
+/* Software interrupt (SWI) and service call (SCI) handler funciton pointer. */
 swi_handler:
     .word do_svc
 
@@ -98,6 +98,9 @@ hang:
 /**
  * do_svc (Do Supervisor Call) prepares initiates a
  * system call.
+ *
+ * do_svc is used for software interrupts (SWI) only. Other traps
+ * and interrupts are handled diffrently by switchtosvc.
  *
  * do_svc creates the trap frame by pushing values onto the the stack,
  * and manually adjusting the stack pointer when necessary. Finally,
@@ -150,27 +153,52 @@ trapret:
     movs pc, lr                 @ Resume executing from pre-trap PC.
 
 
+/**
+ * do_und is the undefined instruction trap handler.
+ *
+ * do_und calls _switchtosvc with the undefined instruction trap
+ * code as a parameter.
+ */
 do_und:
-    STMFD sp, {r0-r4}
-    mov r0, #0x01
-    b _switchtosvc
+    STMFD sp, {r0-r4}           @ Push callee-save registers onto the stack.
+    mov r0, #0x01               @ Set Undef. Inst. trap code as an argument.
+    b _switchtosvc              @ Perform a system call.
 
 
+/**
+ * do_pabts is the prefetch abort trap handler.
+ *
+ * do_pabt calls _switchtosvc with the prefetch abort trap
+ * code as a parameter.
+ */
 do_pabt:
-    STMFD sp, {r0-r4}
-    mov r0, #0x02
-    b _switchtosvc
+    STMFD sp, {r0-r4}           @ Push callee-save registers onto the stack.
+    mov r0, #0x02               @ Set Prefetch Abort trap code as an argument.
+    b _switchtosvc              @ Perform a system call.
 
 
+/**
+ * do_dabt is the data abort handler.
+ *
+ * do_dabt calls _switchtosvc with the data abort trap
+ * code as a parameter.
+ */
 do_dabt:
-    STMFD sp, {r0-r4}
-    mov r0, #0x04
-    b _switchtosvc
+    STMFD sp, {r0-r4}           @ Push callee-save registers onto the stack.
+    mov r0, #0x04               @ Set Data Abort trap code as an argument.
+    b _switchtosvc              @ Perform a system call.
 
+
+/**
+ * do_irq is the interrupt request trap handler.
+ *
+ * do_irq calls _switchtosvc with the interrupt request trap
+ * code as a parameter.
+ */
 do_irq:
-    STMFD sp, {r0-r4}
-    mov r0, #0x80
-    b _switchtosvc
+    STMFD sp, {r0-r4}           @ Push callee-save registers onto the stack.
+    mov r0, #0x80               @ Set IRQ trap code as an argument.
+    b _switchtosvc              @ Perform a system call.
 
 
 _switchtosvc:
