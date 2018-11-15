@@ -48,22 +48,22 @@
 
 
 /** Program status register 'mask IRQ' bit. */
-#define PSR_DISABLE_IRQ		0x00000080
+#define PSR_DISABLE_IRQ	0x00000080
 
 /** Program status register 'mask FIQ' bit. */
-#define PSR_DISABLE_FIQ		0x00000040
+#define PSR_DISABLE_FIQ	0x00000040
 
 /** Program status register overflow condition bit. */
-#define PSR_V			0x10000000
+#define PSR_V 0x10000000
 
 /** Program status register carry condition bit. */
-#define PSR_C			0x20000000
+#define PSR_C 0x20000000
 
 /** Program status register zero condition bit. */
-#define PSR_Z			0x40000000
+#define PSR_Z 0x40000000
 
 /** Program status register negative condition bit. */
-#define PSR_N			0x80000000
+#define PSR_N 0x80000000
 
 
 /**
