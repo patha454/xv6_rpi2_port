@@ -122,12 +122,12 @@ do_svc:
     /* Push the general purpose registers onto the trap frame. */
     STMFD sp, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14}
     sub sp, sp, #60             @ Decrement SP through 15 general purporse registers.
-    mov r0, sp                  @ Save a pointer to the trap frame.
-    STMFD r0, {r13}^            @ Load the user mode stack pointer.
+    mov r0, sp                  @ Save a pointer to the (kernel stack) trap frame.
+    STMFD r0, {r13}^            @ Save the user mode stack pointer onto the frame.
     mov r1, r1                  @ Three no-ops after saving user mode
     mov r1, r1                  @ ...banked registers. More research
     mov r1, r1                  @ ...is needed to find out  why.
-    mov sp, r0                  @ Restore the SP (which didn't it change?)
+    mov sp, r0                  @ Restore the SP
     sub sp, sp, #4              @ Decrement SP through user SP on the trap frame.
     mov r0, sp                  @ Set the trap frame as an argument.
     bl trap                     @ Call trap in exception.c
@@ -135,6 +135,14 @@ do_svc:
 
 /**
  * trapret return from a trap by restoring registers from the trap frame.
+ *
+ * trapret is executed after do_svc to return to user space.
+ *
+ * The execution of trapret is caused by the assembly convention of
+ * flowing execution through labels: bl trap in do_svc is called,
+ * and when trap returns, the next enstruction is mov r0, sp in
+ * trapret because do_svc has no branch or program counter change
+ * at the end of the routine.
  */
 .global trapret
 trapret:
