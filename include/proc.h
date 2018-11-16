@@ -7,6 +7,9 @@
  * proc.h also provides some of the high level variables used to
  * describe and control multiprocessing.
  *
+ * @note Changes to proc.h should be copied to uprogs/prog.h before
+ * building user programs. 
+ *
  * @author Zhiyi Huang, University of Otago, hzy@cs.otago.ac.nz
  * (Adaption from MIT XV6.)
  *
