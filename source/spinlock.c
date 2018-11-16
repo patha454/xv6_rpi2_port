@@ -166,7 +166,7 @@ void pushcli(void)
     cpsr = readcpsr();
     cli();
     if(curr_cpu->ncli++ == 0) {
-        curr_cpu->intena = (cpsr & PSR_DISABLE_IRQ) ? 0 : 1;
+        curr_cpu->irq_enabled = (cpsr & PSR_DISABLE_IRQ) ? 0 : 1;
     }
 }
 
@@ -185,7 +185,7 @@ void popcli(void) {
     if (--curr_cpu->ncli < 0) {
         panic("popcli");
     }
-    if (curr_cpu->ncli == 0 && curr_cpu->intena) {
+    if (curr_cpu->ncli == 0 && curr_cpu->irq_enabled) {
         sti();
     }
 }

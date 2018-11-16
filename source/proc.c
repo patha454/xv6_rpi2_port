@@ -322,9 +322,9 @@ sched(void)
     panic("sched running");
   if(!(readcpsr()&PSR_DISABLE_IRQ))
     panic("sched interruptible");
-  intena = curr_cpu->intena;
+  intena = curr_cpu->irq_enabled;
   swtch(&curr_proc->context, curr_cpu->scheduler);
-  curr_cpu->intena = intena;
+  curr_cpu->irq_enabled = intena;
 }
 
 // Give up the CPU for one scheduling round.
@@ -358,7 +358,7 @@ forkret(void)
   // Return to "caller", actually trapret (see allocproc).
 }
 
-// Atomically release lock and sleep on chan.
+// Atomically release lock and sleep on channel.
 // Reacquires lock when awakened.
 void
 sleep(void *chan, struct spinlock *lk)
@@ -381,13 +381,13 @@ sleep(void *chan, struct spinlock *lk)
   }
 
   // Go to sleep.
-  curr_proc->chan = chan;
+  curr_proc->channel = chan;
   curr_proc->state = SLEEPING;
 //cprintf("inside sleep before calling sched\n");
   sched();
 
   // Tidy up.
-  curr_proc->chan = 0;
+  curr_proc->channel = 0;
 
   // Reacquire original lock.
   if(lk != &ptable.lock){  //DOC: sleeplock2
@@ -397,7 +397,7 @@ sleep(void *chan, struct spinlock *lk)
 }
 
 //PAGEBREAK!
-// Wake up all processes sleeping on chan.
+// Wake up all processes sleeping on channel.
 // The ptable lock must be held.
 static void
 wakeup1(void *chan)
@@ -405,11 +405,11 @@ wakeup1(void *chan)
   struct proc *p;
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->state == SLEEPING && p->chan == chan)
+    if(p->state == SLEEPING && p->channel == chan)
       p->state = RUNNABLE;
 }
 
-// Wake up all processes sleeping on chan.
+// Wake up all processes sleeping on channel.
 void
 wakeup(void *chan)
 {
