@@ -117,8 +117,8 @@ void disable_intrs(void)
  * tv_init ("Trap Vector Initialize") copies the trap vector from the
  * binary text section to where ARM expects to find the trap vector.
  *
- * tv_init will also allocate stack pages and stack pointers for each
- * CPU mode used by traps in ARM xv6.
+ * tv_init will also allocate stack pages, stack pointers, and IRQ/FIQ
+ * masks for each CPU mode used by traps in ARM xv6.
  *
  * tv_init also flushes the caches to the memory, because ARM will
  * fetch the trap vector from RAM, not cache, and sets the stack p
