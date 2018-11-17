@@ -138,8 +138,8 @@ do_svc:
  *
  * trapret is executed after do_svc to return to user space.
  *
- * The execution of trapret is caused by the assembly convention of
- * flowing execution through labels: bl trap in do_svc is called,
+ * The execution of trapret after do_svc is caused by the assembly convention
+ * of flowing execution through labels: bl trap in do_svc is called,
  * and when trap returns, the next enstruction is mov r0, sp in
  * trapret because do_svc has no branch or program counter change
  * at the end of the routine.
