@@ -8,7 +8,7 @@
  * describe and control multiprocessing.
  *
  * @note Changes to proc.h should be copied to uprogs/prog.h before
- * building user programs. 
+ * building user programs.
  *
  * @author Zhiyi Huang, University of Otago, hzy@cs.otago.ac.nz
  * (Adaption from MIT XV6.)
