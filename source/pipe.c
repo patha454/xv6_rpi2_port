@@ -92,7 +92,7 @@ pipewrite(struct pipe *p, char *addr, int n)
     }
     p->data[p->nwrite++ % PIPESIZE] = addr[i];
   }
-  wakeup(&p->nread);  //DOC: pipewrite-wakeup1
+  wakeup(&p->nread);  //DOC: pipewrite-wakeup_1
   release(&p->lock);
   return n;
 }
