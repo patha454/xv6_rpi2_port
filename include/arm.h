@@ -120,8 +120,6 @@ static inline void outw(u_int32 addr, u_int32 data)
  * @see do_svc & _switchtosvc in exception.S.
  * @see trap() in trap.c.
  */
-// Layout of the trap frame built on the stack
-// by exception.s, and passed to trap().
 struct trapframe {
   u_int32 sp;        /**< User mode stack pointer. */
   u_int32 r0;
