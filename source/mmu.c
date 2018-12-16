@@ -42,31 +42,31 @@ void mmuinit0(void)
 	// map all of ram at KERNBASE
 	va = KERNBASE + MBYTE;
 	for(pa = PHYSTART + MBYTE; pa < PHYSTART+PHYSIZE; pa += MBYTE){
-		l1[PDX(va)] = pa|DOMAIN0|PDX_AP(K_RW)|SECTION|CACHED|BUFFERED;
+		l1[PDX(va)] = pa|PDX_ATRB_DOMAIN0|PDX_ATRB_AP(PTX_ATRB_KRW)|PDX_ATRB_SECTION_ENTRY|PTX_ATRB_CACHED|PTX_ATRB_BUFFERED;
 		va += MBYTE;
 	}
 
 	// identity map first MB of ram so mmu can be enabled
-	//l1[PDX(PHYSTART)] = PHYSTART|DOMAIN0|PDX_AP(K_RW)|SECTION|CACHED|BUFFERED;
+	//l1[PDX(PHYSTART)] = PHYSTART|PDX_ATRB_DOMAIN0|PDX_ATRB_AP(PTX_ATRB_KRW)|PDX_ATRB_SECTION_ENTRY|PTX_ATRB_CACHED|PTX_ATRB_BUFFERED;
 
 	// map IO region
 	va = MMIO_VA;
 	for(pa = MMIO_PA; pa < MMIO_PA+MMIO_SIZE; pa += MBYTE){
-		l1[PDX(va)] = pa|DOMAIN0|PDX_AP(K_RW)|SECTION;
+		l1[PDX(va)] = pa|PDX_ATRB_DOMAIN0|PDX_ATRB_AP(PTX_ATRB_KRW)|PDX_ATRB_SECTION_ENTRY;
 		va += MBYTE;
 	}
 
 	// map GPU memory
 	va = GPUMEMBASE;
 	for(pa = 0; pa < (u_int32)GPUMEMSIZE; pa += MBYTE){
-		l1[PDX(va)] = pa|DOMAIN0|PDX_AP(K_RW)|SECTION;
+		l1[PDX(va)] = pa|PDX_ATRB_DOMAIN0|PDX_ATRB_AP(PTX_ATRB_KRW)|PDX_ATRB_SECTION_ENTRY;
 		va += MBYTE;
 	}
 
 	// double map exception vectors at top of virtual memory
 	va = HVECTORS;
-	l1[PDX(va)] = (u_int32)l2|DOMAIN0|COARSE;
-	l2[PTX(va)] = PHYSTART|PTX_AP(K_RW)|SMALL;
+	l1[PDX(va)] = (u_int32)l2|PDX_ATRB_DOMAIN0|PDX_ATRB_PTX_ENTRY;
+	l2[PTX(va)] = PHYSTART|PTX_ATRB_AP(PTX_ATRB_KRW)|PTX_ATRB_SMALL;
 
 	//	asm volatile("mov r1, #1\n\t"
 	//                "mcr p15, 0, r1, c3, c0\n\t"
@@ -98,7 +98,7 @@ mmuinit1(void)
 	// map the rest of RAM after PHYSTART+PHYSIZE
         va = KERNBASE + PHYSIZE;
         for(pa = PHYSTART + PHYSIZE; pa < PHYSTART+pm_size; pa += MBYTE){
-                l1[PDX(va)] = pa|DOMAIN0|PDX_AP(K_RW)|SECTION|CACHED|BUFFERED;
+                l1[PDX(va)] = pa|PDX_ATRB_DOMAIN0|PDX_ATRB_AP(PTX_ATRB_KRW)|PDX_ATRB_SECTION_ENTRY|PTX_ATRB_CACHED|PTX_ATRB_BUFFERED;
                 va += MBYTE;
         }
 
@@ -109,8 +109,8 @@ mmuinit1(void)
 	// drain write buffer; writeback data cache range [va, va+n]
 	va1 = (u_int32)&l1[PDX(PHYSTART)];
 	va2 = va1 + sizeof(pde_t);
-	va1 = va1 & ~((u_int32)CACHELINESIZE-1);
-	va2 = va2 & ~((u_int32)CACHELINESIZE-1);
+	va1 = va1 & ~((u_int32)CACHE_LINE_SIZE-1);
+	va2 = va2 & ~((u_int32)CACHE_LINE_SIZE-1);
 	flush_dcache(va1, va2);
 
 	// invalidate TLB; DSB barrier used
