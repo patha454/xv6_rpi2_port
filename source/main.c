@@ -63,7 +63,7 @@ u_int32 mb_data[10];
 
 int cmain()
 {
-  mmuinit0();
+    mmu_init_stage1();
   machinit();
 
   #if defined (RPI1) || defined (RPI2)
@@ -86,8 +86,8 @@ int cmain()
 
   pm_size = getpmsize();
   cprintf("ARM memory is %x\n", pm_size);
-  
-  mmuinit1();
+
+    mmu_init_stage2();
   gpuinit();
   pinit();
   tv_init();

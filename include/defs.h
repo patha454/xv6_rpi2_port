@@ -12,8 +12,8 @@ void OkLoop(void);
 void NotOkLoop(void);
 
 // mmu.c
-void mmuinit0(void);
-void mmuinit1(void);
+void mmu_init_stage1(void);
+void mmu_init_stage2(void);
 void barriers(void);
 void dsb_barrier(void);
 void flush_tlb(void);
