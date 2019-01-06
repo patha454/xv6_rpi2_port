@@ -161,7 +161,7 @@ static struct proc* spawn_proc(struct proc *p)
     /* Set up new context to start executing at fork_return,
      * which returns to trapret. */
     sp -= sizeof *p->context;
-    p->context = (struct context*)sp;
+    p->context = (struct context*) sp;
     memset(p->context, 0, sizeof *p->context);
     p->context->pc = (u_int32) fork_return;
     p->context->lr = (u_int32) trapret;
@@ -339,9 +339,9 @@ void exit(void)
     iput(curr_proc->cwd);
     curr_proc->cwd = 0;
     acquire(&ptable.lock);
-    /* Wakeup the parent, if parent is wait()int. */
+    /* Wakeup the parent, if parent is wait()ing. */
     wakeup_1(curr_proc->parent);
-    /* Pass the abandoned childred to the init process. */
+    /* Pass the abandoned children to the init process. */
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
         if (p->parent == curr_proc){
             p->parent = init_proc;
@@ -365,7 +365,7 @@ void exit(void)
  * child's PID.
  *
  * @note Sleep will only return when the process has no more
- * child processes. If the process has no exited (ZOMBIE)
+ * child processes. If the process has not exited (ZOMBIE)
  * child processes, the process will sleep until a child
  * exits.
  *

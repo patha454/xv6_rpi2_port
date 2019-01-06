@@ -147,6 +147,7 @@ pagetable_invalidate:
 	//ldr	r2,=0x15c06 	//Outer cache
 	ldr	r2,=0x14406
 
+    //Identity map the first MP of physical memory.
 	// Map __pa_init_start to __pa_init_start address
 	ldr	r1,=PHYSTART
 	lsr	r1, #20
