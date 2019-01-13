@@ -17,10 +17,10 @@
 #include "elf.h"
 
 extern char data[];  // defined by kernel.ld
-extern char end[];  // defined by kernel.ld
+extern char kernel_bin_end[];  // defined by kernel.ld
 extern unsigned int pm_size;
 
-pde_t *kpgdir;  // for use in scheduler()
+pde_t *kernel_page_dir;  // for use in scheduler()
 
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
@@ -88,7 +88,7 @@ mappages(pde_t *pgdir, void *va, u_int32 size, u_int32 pa, u_int32 l1attr, u_int
 }
 
 // There is one page table per process, plus one that's used when
-// a CPU is not running any process (kpgdir). The kernel uses the
+// a CPU is not running any process (kernel_page_dir). The kernel uses the
 // current process's page table during system calls and interrupts;
 // page protection bits prevent user code from using the kernel's
 // mappings.
@@ -105,8 +105,8 @@ mappages(pde_t *pgdir, void *va, u_int32 size, u_int32 pa, u_int32 l1attr, u_int
 //   0xfe000000..0: mapped direct (devices such as ioapic)
 //
 // The kernel allocates physical memory for its heap and for user memory
-// between V2P(end) and the end of physical memory (PHYSTOP)
-// (directly addressable from end..P2V(PHYSTOP)).
+// between V2P(kernel_bin_end) and the kernel_bin_end of physical memory (PHYSTOP)
+// (directly addressable from kernel_bin_end..P2V(PHYSTOP)).
 
 // This table defines the kernel's mappings, which are present in
 // every process's page table.
@@ -150,7 +150,7 @@ setupkvm_new(void)
 /*  if((pgdir = (pde_t*)kalloc()) == 0)
     return 0;*/
 
-  pgdir = kpgdir;
+  pgdir = kernel_page_dir;
   memset(pgdir, 0, 4*PGSIZE);
   if (p2v(pm_size) > (void*)MMIO_VA)
     panic("PHYSTOP (pm_size) too high");
@@ -167,7 +167,7 @@ setupkvm_new(void)
 void
 kvmalloc(void)
 {
-  kpgdir = setupkvm_new();
+  kernel_page_dir = setupkvm_new();
   switchkvm();
 }
 
@@ -185,8 +185,8 @@ switchkvm_new(void)
 {
   dsb_barrier();
   flush_idcache();
-  //cprintf("The phy pgtbase address is %x\n", (u_int32)v2p(kpgdir));
-  set_pgtbase((u_int32)v2p(kpgdir));   // switch to the kernel page table
+  //cprintf("The phy pgtbase address is %x\n", (u_int32)v2p(kernel_page_dir));
+  set_pgtbase((u_int32)v2p(kernel_page_dir));   // switch to the kernel page table
   //cprintf("after set_pgtbase\n");
   dsb_barrier();
   flush_tlb();
@@ -201,8 +201,8 @@ switchuvm(struct proc *p)
   //cpu->ts.esp0 = (u_int32)proc->kstack + KSTACKSIZE;
   if(p->pgdir == 0)
     panic("switchuvm: no pgdir");
-//cprintf("before copying uvm to kvm kpgdir=%x the first entry: %x\n", kpgdir, kpgdir[0]);
-  memmove((void *)kpgdir, (void *)p->pgdir, PGSIZE);  // switch to new user address space
+//cprintf("before copying uvm to kvm kernel_page_dir=%x the first entry: %x\n", kernel_page_dir, kernel_page_dir[0]);
+  memmove((void *)kernel_page_dir, (void *)p->pgdir, PGSIZE);  // switch to new user address space
   flush_idcache();
   flush_tlb();
   popcli();

@@ -8,8 +8,8 @@ struct spinlock;
 struct stat;
 struct superblock;
 
-void OkLoop(void);
-void NotOkLoop(void);
+void ok_loop(void);
+void not_ok_loop(void);
 
 // mmu.c
 void mmu_init_stage1(void);
@@ -198,9 +198,9 @@ u_int32		readcpsr(void);
 void init_mode_stack(u_int32 mode);
 
 // uart.c
-void            uartinit(void);
-void            miniuartintr(void);
-void            uartputc(u_int32);
+void        uartinit(void);
+void        miniuartintr(void);
+void        uartputc(u_int32);
 void		setgpiofunc(u_int32, u_int32);
 void		setgpioval(u_int32, u_int32);
 

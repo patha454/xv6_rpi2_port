@@ -6,7 +6,7 @@
 #include "spinlock.h"
 
 void freerange(void *vstart, void *vend);
-extern char end[]; // first address after kernel loaded from ELF file
+extern char kernel_bin_end[]; // first address after kernel loaded from ELF file
 extern unsigned int pm_size;
 
 struct run {
@@ -59,7 +59,7 @@ void
 kfree(char *v)
 {
   struct run *r;
-  if((u_int32)v % PGSIZE || v < end || v2p(v) >= pm_size)
+  if((u_int32)v % PGSIZE || v < kernel_bin_end || v2p(v) >= pm_size)
     panic("kfree");
 
   // Fill with junk to catch dangling refs.

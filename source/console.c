@@ -32,7 +32,7 @@ u_int32 frameheight=1024, framewidth=1280, framedepth=16;
 u_int32 fontheight=16, fontwidth=8;
 frame_buf_desc fbinfo __attribute__ ((aligned (16), nocommon));
 
-extern volatile u_int32 *mailbuffer;
+extern volatile u_int32 *mail_buffer;
 extern u_char8 font[];
 static u_int32 gpucolour=0xffff;
 

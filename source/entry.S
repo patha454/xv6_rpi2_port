@@ -190,7 +190,7 @@ mp_continue:
 .global _pagingstart
 _pagingstart:
 	bl cmain  /* call C functions now */
-	bl NotOkLoop
+	bl not_ok_loop
 
 .global acknowledge
 acknowledge:

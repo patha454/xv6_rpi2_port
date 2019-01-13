@@ -44,7 +44,7 @@ create_request(volatile u_int32 *mbuf, u_int32 tag, u_int32 buflen, u_int32 len,
     else
         for (i = 0; i < nw; ++i) tag_info[POS_TAG_DATA + i] = data[i];
 
-    tag_info[POS_TAG_DATA+nw] = 0; // indicate end of tag
+    tag_info[POS_TAG_DATA+nw] = 0; // indicate kernel_bin_end of tag
 
     tag_len = mbuf[MB_HEADER_LENGTH + POS_TAG_BUFLEN];
     total_len = (MB_HEADER_LENGTH*4) + (TAG_HEADER_LENGTH*4) + tag_len + 4;
@@ -54,11 +54,11 @@ create_request(volatile u_int32 *mbuf, u_int32 tag, u_int32 buflen, u_int32 len,
 
 }
 
-volatile u_int32 *mailbuffer;
+volatile u_int32 *mail_buffer;
 
 void mailboxinit()
 {
-mailbuffer = (u_int32 *)kalloc();
+mail_buffer = (u_int32 *)kalloc();
 }
 
 u_int32

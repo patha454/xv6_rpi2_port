@@ -59,7 +59,7 @@ SECTIONS {
 		*(.bss)
 	}
 
-	PROVIDE(end = .);
+	PROVIDE(kernel_bin_end = .);
 
 	/*
 	* Finally comes everything else. A fun trick here is to put all other 

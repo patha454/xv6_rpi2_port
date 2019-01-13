@@ -92,7 +92,7 @@ fiq_handler:
  * Hang provides a facility to enter an infinite loop in error cases.
  */
 hang:
-    bl NotOkLoop;
+    bl not_ok_loop;
     b hang
 
 /**
@@ -142,7 +142,7 @@ do_svc:
  * of flowing execution through labels: bl trap in do_svc is called,
  * and when trap returns, the next enstruction is mov r0, sp in
  * trapret because do_svc has no branch or program counter change
- * at the end of the routine.
+ * at the kernel_bin_end of the routine.
  */
 .global trapret
 trapret:

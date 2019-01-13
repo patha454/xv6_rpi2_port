@@ -185,7 +185,7 @@ void print_trap(struct trapframe *tf)
     cprintf("cpu: %x, addr: %x, pid: %x, trapno: %x, spsr: %x, sp: %x, pc: %x cpsr: %x ifar: %x\n", curr_cpu->id, tf->pc, tf->trapno, tf->spsr, tf->sp, tf->pc, tf->cpsr, tf->ifar);
     cprintf("Saved registers: r0: %x, r1: %x, r2: %x, r3: %x, r4: %x, r5: %x\n", tf->r0, tf->r1, tf->r2, tf->r3, tf->r4, tf->r5);
     cprintf("More registers: r6: %x, r7: %x, r8: %x, r9: %x, r10: %x, r11: %x, r12: %x\n", tf->r6, tf->r7, tf->r8, tf->r9, tf->r10, tf->r11, tf->r12);
-    //NotOkLoop();
+    //not_ok_loop();
 }
 
 
